@@ -7,15 +7,18 @@ import (
 	"main.go/pkg/config"
 	"main.go/pkg/db"
 	"main.go/pkg/repository"
-	"main.go/pkg/usercase"
+	"main.go/pkg/usecase"
 )
 
 func InitializeAPI1(cfg config.Config) (*http.ServerHTTP, error) {
 	wire.Build(
 		db.ConnectDatabse,
 		repository.NewUserRespository,
-		usercase.NewUserUseCase,
+		repository.NewAdminRepository,
+		usecase.NewUserUseCase,
+		usecase.NewAdminUseCase,
 		handler.NewUserHandler,
+		handler.NewAdminHandler,
 		http.NewServerHTTP,
 	)
 	return &http.ServerHTTP{}, nil

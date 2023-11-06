@@ -12,7 +12,7 @@ import (
 	"main.go/pkg/config"
 	"main.go/pkg/db"
 	"main.go/pkg/repository"
-	"main.go/pkg/usercase"
+	"main.go/pkg/usecase"
 )
 
 // Injectors from wire.go:
@@ -23,8 +23,11 @@ func InitializeAPI(cfg config.Config) (*http.ServerHTTP, error) {
 		return nil, err
 	}
 	userRepository := repository.NewUserRespository(gormDB)
-	userUseCase := usercase.NewUserUseCase(userRepository)
+	userUseCase := usecase.NewUserUseCase(userRepository)
 	userHandler := handler.NewUserHandler(userUseCase)
-	serverHTTP := http.NewServerHTTP(userHandler)
+	adminRespository := repository.NewAdminRepository(gormDB)
+	adminUseCase := usecase.NewAdminUseCase(adminRespository)
+	adminHandler := handler.NewAdminHandler(adminUseCase)
+	serverHTTP := http.NewServerHTTP(userHandler, adminHandler)
 	return serverHTTP, nil
 }

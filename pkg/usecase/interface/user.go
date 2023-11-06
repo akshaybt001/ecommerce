@@ -3,10 +3,9 @@ package interfaces
 import (
 	"main.go/pkg/common/helper"
 	"main.go/pkg/common/response"
-	"main.go/pkg/domain"
 )
 
-type UserRepository interface {
+type UserUseCase interface {
 	UserSignUp(user helper.UserReq) (response.UserData, error)
-	UserLogin(email string) (domain.Users, error)
+	UserLogin(user helper.LoginReq) (string, error)
 }
