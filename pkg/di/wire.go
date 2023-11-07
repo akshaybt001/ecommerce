@@ -15,10 +15,13 @@ func InitializeAPI1(cfg config.Config) (*http.ServerHTTP, error) {
 		db.ConnectDatabse,
 		repository.NewUserRespository,
 		repository.NewAdminRepository,
+		repository.NewProductRepository,
 		usecase.NewUserUseCase,
 		usecase.NewAdminUseCase,
+		usecase.NewProductUsecase,
 		handler.NewUserHandler,
 		handler.NewAdminHandler,
+		handler.NewProductHandler,
 		http.NewServerHTTP,
 	)
 	return &http.ServerHTTP{}, nil

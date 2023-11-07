@@ -12,7 +12,8 @@ type ServerHTTP struct {
 
 func NewServerHTTP(
 	userHandler *handler.UserHandler,
-	adminHandler *handler.AdminHandler) *ServerHTTP {
+	adminHandler *handler.AdminHandler,
+	productHandler *handler.ProductHandler) *ServerHTTP {
 
 	engine := gin.Default()
 
@@ -25,7 +26,7 @@ func NewServerHTTP(
 		{
 			user.POST("/logout", userHandler.UserLogout)
 		}
-		
+
 	}
 	admin := engine.Group("/admin")
 	{
@@ -33,8 +34,17 @@ func NewServerHTTP(
 		admin.Use(middleware.AdminAuth)
 		{
 			admin.POST("/logout", adminHandler.AdminLogout)
+
+			category := admin.Group("/category")
+			{
+				category.POST("/create", productHandler.CreateCategory)
+				category.PATCH("/update/:id", productHandler.UpdateCategory)
+				category.DELETE("/delete/:id", productHandler.DeleteCategory)
+				category.GET("/listall", productHandler.ListAllCategories)
+				category.GET("/list/:id", productHandler.ListCategory)
+			}
 		}
-		
+
 	}
 
 	return &ServerHTTP{engine: engine}

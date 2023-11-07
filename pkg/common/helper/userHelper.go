@@ -1,6 +1,6 @@
 package helper
 
-type UserReq struct{
+type UserReq struct {
 	Name     string `json:"name" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
 	Mobile   string `json:"mobile" binding:"required"`

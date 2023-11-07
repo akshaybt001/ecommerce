@@ -18,7 +18,7 @@ func NewUserRespository(DB *gorm.DB) interfaces.UserRepository {
 
 func (c *userDatabase) UserSignUp(user helper.UserReq) (response.UserData, error) {
 	var userData response.UserData
-	insertQuery := `INSERT INTO users (name,email,mobile,password)VALUES($1,$2,$3,$4) 
+	insertQuery := `INSERT INTO users (name,email,mobile,password,created_at)VALUES($1,$2,$3,$4,NOW()) 
 					RETURNING id,name,email,mobile`
 	err := c.DB.Raw(insertQuery, user.Name, user.Email, user.Mobile, user.Password).Scan(&userData).Error
 	return userData, err

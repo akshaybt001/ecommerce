@@ -11,6 +11,7 @@ require (
 )
 
 require (
+	github.com/akshayur04/project-ecommerce v0.0.0-20230818154551-6c8d9e3d6393
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect

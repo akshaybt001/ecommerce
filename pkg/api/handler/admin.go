@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
 	"main.go/pkg/common/helper"
 	"main.go/pkg/common/response"
 	services "main.go/pkg/usecase/interface"
@@ -52,6 +53,7 @@ func (cr *AdminHandler) AdminLogin(c *gin.Context) {
 		Errors:     nil,
 	})
 }
+
 //-------------------------- Log-Out --------------------------//
 
 func (cr *AdminHandler) AdminLogout(c *gin.Context) {
