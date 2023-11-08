@@ -50,3 +50,43 @@ func (c *ProductUsecase) ListCategory(id int) (response.Category, error) {
 	category, err := c.productRepo.ListCategory(id)
 	return category, err
 }
+
+// -------------------------- Create-Brand --------------------------//
+
+func (c *ProductUsecase) AddBrand(Brand helper.Brands) (response.Brands, error) {
+	newBrand, err := c.productRepo.AddBrand(Brand)
+	return newBrand, err
+}
+
+// -------------------------- Update-Brand --------------------------//
+
+func (c *ProductUsecase) UpdateBrand(id int, Brand helper.Brands) (response.Brands, error) {
+	updatedBrand, err := c.productRepo.UpdateBrand(id, Brand)
+	return updatedBrand, err
+}
+// -------------------------- Delete-Product --------------------------//
+
+func (c *ProductUsecase) DeleteBrand(id int) error {
+	err := c.productRepo.DeleteBrand(id)
+	return err
+}
+
+// -------------------------- List-All-Product --------------------------//
+
+func (c *ProductUsecase) ListAllBrand() ([]response.Brands, error) {
+	brands, err := c.productRepo.ListAllBrand()
+	return brands, err
+}
+
+// -------------------------- List-Single-Product --------------------------//
+
+func (c *ProductUsecase) ListBrand(id int) (response.Brands, error) {
+	product, err := c.productRepo.ListBrand(id)
+	return product, err
+}
+// -------------------------- Add-Model --------------------------//
+
+func (c *ProductUsecase) AddModel(model helper.Model) (response.Model, error) {
+	newModel, err := c.productRepo.AddModel(model)
+	return newModel, err
+}

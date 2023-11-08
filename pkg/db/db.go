@@ -18,6 +18,8 @@ func ConnectDatabse(cfg config.Config) (*gorm.DB, error) {
 		&domain.Users{},
 		&domain.Admins{},
 		&domain.Category{},
+		&domain.Brand{},
+		&domain.Model{},
 	)
 	return db, dbErr
 }

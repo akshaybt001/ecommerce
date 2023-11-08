@@ -10,12 +10,11 @@ import (
 	services "main.go/pkg/usecase/interface"
 )
 
-
 type ProductHandler struct {
 	productUsecase services.ProductUsecase
 }
 
-func NewProductHandler(productUsecase services.ProductUsecase) *ProductHandler{
+func NewProductHandler(productUsecase services.ProductUsecase) *ProductHandler {
 	return &ProductHandler{
 		productUsecase: productUsecase,
 	}
@@ -54,16 +53,15 @@ func (cr *ProductHandler) CreateCategory(c *gin.Context) {
 	})
 }
 
-
-func (cr *ProductHandler) UpdateCategory(c * gin.Context){
+func (cr *ProductHandler) UpdateCategory(c *gin.Context) {
 	var category helper.Category
-	err :=c.Bind(&category)
-	if err !=nil{
-		c.JSON(http.StatusBadRequest,response.Response{
+	err := c.Bind(&category)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
 			StatusCode: 400,
-			Message: "bind failed",
-			Data: nil,
-			Errors: err.Error(),
+			Message:    "bind failed",
+			Data:       nil,
+			Errors:     err.Error(),
 		})
 		return
 	}
@@ -101,7 +99,7 @@ func (cr *ProductHandler) UpdateCategory(c * gin.Context){
 // -------------------------- Delete-Category --------------------------//
 
 func (cr *ProductHandler) DeleteCategory(c *gin.Context) {
-	parmasId := c.Param("category_id")
+	parmasId := c.Param("id")
 	id, err := strconv.Atoi(parmasId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.Response{
@@ -133,23 +131,23 @@ func (cr *ProductHandler) DeleteCategory(c *gin.Context) {
 
 }
 
-func (cr * ProductHandler) ListAllCategories(c *gin.Context){
-	categories, err :=cr.productUsecase.ListAllCategories()
-	if err!=nil{
-		c.JSON(http.StatusBadRequest,response.Response{
+func (cr *ProductHandler) ListAllCategories(c *gin.Context) {
+	categories, err := cr.productUsecase.ListAllCategories()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
 			StatusCode: 400,
-			Message: "can't find category",
-			Data: nil,
-			Errors: err.Error(),
+			Message:    "can't find category",
+			Data:       nil,
+			Errors:     err.Error(),
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK,response.Response{
+	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
-		Message: "Categories are",
-		Data: categories,
-		Errors: nil,
+		Message:    "Categories are",
+		Data:       categories,
+		Errors:     nil,
 	})
 }
 
@@ -186,3 +184,201 @@ func (cr *ProductHandler) ListCategory(c *gin.Context) {
 	})
 }
 
+// -------------------------- Create-Brand --------------------------//
+
+func (cr *ProductHandler) AddBrand(c *gin.Context) {
+	var Brand helper.Brands
+	err := c.Bind(&Brand)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "can't bind",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	newBrand, err := cr.productUsecase.AddBrand(Brand)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "can't add Brand",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "Brand Added",
+		Data:       newBrand,
+		Errors:     nil,
+	})
+
+}
+
+// -------------------------- Update-Brand --------------------------//
+
+func (cr *ProductHandler) UpdateBrand(c *gin.Context) {
+	var Brand helper.Brands
+	paramsId := c.Param("id")
+	id, err := strconv.Atoi(paramsId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "Cant find id",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	if err := c.Bind(&Brand); err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "Cant bind body",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	updatedBrand, err := cr.productUsecase.UpdateBrand(id, Brand)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "Cant update brand",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusBadRequest, response.Response{
+		StatusCode: 200,
+		Message:    "Brand updated",
+		Data:       updatedBrand,
+		Errors:     nil,
+	})
+
+}
+
+func (cr *ProductHandler) DeleteBrand(c *gin.Context) {
+
+	paramsId := c.Param("id")
+	id, err := strconv.Atoi(paramsId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "can't find Brandid",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	err = cr.productUsecase.DeleteBrand(id)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "can't delete brand",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "brand deleted",
+		Data:       nil,
+		Errors:     nil,
+	})
+}
+
+// -------------------------- List-All-Brand --------------------------//
+
+func (cr *ProductHandler) ListAllBrand(c *gin.Context) {
+
+	brands, err := cr.productUsecase.ListAllBrand()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "can't find Brands",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "Brands",
+		Data:       brands,
+		Errors:     nil,
+	})
+}
+
+// -------------------------- List-Single-Brand --------------------------//
+
+func (cr *ProductHandler) ListBrand(c *gin.Context) {
+
+	paramsId := c.Param("id")
+	id, err := strconv.Atoi(paramsId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "can't find brandid",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	brand, err := cr.productUsecase.ListBrand(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "can't find brand",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "brand",
+		Data:       brand,
+		Errors:     nil,
+	})
+}
+
+// -------------------------- Add-Model --------------------------//
+
+func (cr *ProductHandler) AddModel(c *gin.Context) {
+	var model helper.Model
+	err := c.Bind(&model)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "Cant bind",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	newModel, err := cr.productUsecase.AddModel(model)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "Cant create",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "product created",
+		Data:       newModel,
+		Errors:     nil,
+	})
+}

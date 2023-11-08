@@ -43,6 +43,20 @@ func NewServerHTTP(
 				category.GET("/listall", productHandler.ListAllCategories)
 				category.GET("/list/:id", productHandler.ListCategory)
 			}
+
+			brand := admin.Group("/brand")
+			{
+				brand.POST("/create", productHandler.AddBrand)
+				brand.PATCH("/update/:id", productHandler.UpdateBrand)
+				brand.DELETE("/delete/:id", productHandler.DeleteBrand)
+				brand.GET("/listall", productHandler.ListAllBrand)
+				brand.GET("/list/:id", productHandler.ListBrand)
+			}
+			model := admin.Group("/model")
+			{
+				model.POST("/add", productHandler.AddModel)
+
+			}
 		}
 
 	}

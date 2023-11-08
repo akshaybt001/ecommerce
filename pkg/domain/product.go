@@ -9,9 +9,9 @@ type Category struct {
 	Updated_at time.Time
 }
 
-type Products struct {
+type Brand struct {
 	Id          uint   `gorm:"primaryKey;unique;not null"`
-	ProductName string `gorm:"unique;not null"`
+	Brand       string `gorm:"unique;not null"`
 	Description string
 	Category_id uint
 	Category    Category `gorm:"foreignKey:Category_id"`
@@ -22,9 +22,9 @@ type Products struct {
 type Model struct {
 	Id           uint   `gorm:"primaryKey;unique;not null"`
 	ModelName    string `gorm:"not null"`
-	Product_id   uint
-	Products     Products `gorm:"foreignKey:Product_id"`
-	Sku          string   `gorm:"not null"`
+	Brand_id     uint
+	Brand        Brand  `gorm:"foreignKey:Brand_id"`
+	Sku          string `gorm:"not null"`
 	Qty_in_stock int
 	Color        string
 	Ram          int
@@ -41,6 +41,6 @@ type Model struct {
 type Images struct {
 	Id        uint `gorm:"primaryKey;unique;not null"`
 	ProductId uint
-	Products  Products `gorm:"foreignKey:ProductId"`
+	Brand     Brand `gorm:"foreignKey:ProductId"`
 	FileName  string
 }
