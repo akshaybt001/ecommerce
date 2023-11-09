@@ -7,6 +7,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 	"main.go/pkg/common/helper"
+	"main.go/pkg/common/response"
 	interfaces "main.go/pkg/repository/interface"
 	services "main.go/pkg/usecase/interface"
 )
@@ -52,4 +53,33 @@ func (c *adminUseCase) AdminLogin(admin helper.LoginReq) (string, error) {
 	}
 
 	return token, nil
+}
+
+
+// -------------------------- Show-Single-User --------------------------//
+
+func (c *adminUseCase) ShowUser(userID int) (response.UserDetails, error) {
+	userData, err := c.adminRepo.ShowUser(userID)
+	return userData, err
+}
+
+// -------------------------- Show-All-Users --------------------------//
+
+func (c *adminUseCase) ShowAllUser() ([]response.UserDetails, error) {
+	userDatas, err := c.adminRepo.ShowAllUser()
+	return userDatas, err
+}
+
+// -------------------------- Block-User --------------------------//
+
+func (c *adminUseCase) BlockUser(body helper.BlockData, adminId int) error {
+	err := c.adminRepo.BlockUser(body, adminId)
+	return err
+}
+
+// -------------------------- UnBlock-User --------------------------//
+
+func (c *adminUseCase) UnblockUser(id int) error {
+	err := c.adminRepo.UnblockUser(id)
+	return err
 }

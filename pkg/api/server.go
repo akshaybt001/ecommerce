@@ -22,6 +22,19 @@ func NewServerHTTP(
 		user.POST("/signup", userHandler.UserSignUp)
 		user.POST("/login", userHandler.UserLogin)
 
+		products := user.Group("/products")
+		{
+			products.GET("/listallmodels", productHandler.ListAllModel)
+			products.GET("/listmodel/:id", productHandler.ListModel)
+
+			products.GET("/listallbrands", productHandler.ListAllBrand)
+			products.GET("/listbrand/:id", productHandler.ListBrand)
+
+			products.GET("/listallcategories", productHandler.ListAllCategories)
+			products.GET("/listcategories/:id", productHandler.ListCategory)
+
+		}
+
 		user.Use(middleware.UserAuth)
 		{
 			user.POST("/logout", userHandler.UserLogout)
@@ -34,6 +47,14 @@ func NewServerHTTP(
 		admin.Use(middleware.AdminAuth)
 		{
 			admin.POST("/logout", adminHandler.AdminLogout)
+
+			adminUsers := admin.Group("/user")
+			{
+				adminUsers.GET("/list/:user_id", adminHandler.ShowUser)
+				adminUsers.GET("/listall", adminHandler.ShowAllUsers)
+				adminUsers.PATCH("/block", adminHandler.BlockUser)
+				adminUsers.PATCH("/unblock/:user_id", adminHandler.UnblockUser)
+			}
 
 			category := admin.Group("/category")
 			{
@@ -55,6 +76,10 @@ func NewServerHTTP(
 			model := admin.Group("/model")
 			{
 				model.POST("/add", productHandler.AddModel)
+				model.PATCH("/update/:id", productHandler.UpdateModel)
+				model.DELETE("/delete/:id", productHandler.DeleteModel)
+				model.GET("/listall", productHandler.ListAllModel)
+				model.GET("/list/:id", productHandler.ListModel)
 
 			}
 		}

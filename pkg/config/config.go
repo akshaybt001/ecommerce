@@ -11,9 +11,9 @@ type Config struct {
 	DBUser           string `mapstructure:"DB_USER"`
 	DBPassword       string `mapstructure:"DB_PASSWORD"`
 	DBSslmode        string `mapstructure:"DB_SSLMODE"`
-	TWILIOACCOUNTSID string `mapstructure:"TWILIO_ACCOUNT_SID"`
-	TWILIOAUTHTOKEN  string `mapstructure:"TWILIO_AUTHTOKEN"`
-	TWILIOSERVICESID string `mapstructure:"TWILIO_SERVICES_ID"`
+	// TWILIOACCOUNTSID string `mapstructure:"TWILIO_ACCOUNT_SID"`
+	// TWILIOAUTHTOKEN  string `mapstructure:"TWILIO_AUTHTOKEN"`
+	// TWILIOSERVICESID string `mapstructure:"TWILIO_SERVICES_ID"`
 }
 
 var envs = []string{
@@ -22,9 +22,9 @@ var envs = []string{
 	"DB_USER",
 	"DB_PASSWORD",
 	"DB_SSLMODE",
-	"TWILIO_ACCOUNT_SID",
-	"TWILIO_AUTHTOKEN",
-	"TWILIO_SERVICES_ID",
+	// "TWILIO_ACCOUNT_SID",
+	// "TWILIO_AUTHTOKEN",
+	// "TWILIO_SERVICES_ID",
 }
 
 func LoadConfig() (Config, error) {

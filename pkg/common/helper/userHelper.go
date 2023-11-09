@@ -5,6 +5,7 @@ type UserReq struct {
 	Email    string `json:"email" binding:"required,email"`
 	Mobile   string `json:"mobile" binding:"required"`
 	Password string `json:"password"`
+	OTP      string `json:"otp"`
 }
 type LoginReq struct {
 	Email    string `json:"email" binding:"required,email"`

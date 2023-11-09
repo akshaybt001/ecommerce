@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"main.go/pkg/api/middleware"
 	"main.go/pkg/common/helper"
 	"main.go/pkg/common/response"
 	services "main.go/pkg/usecase/interface"
@@ -32,6 +33,36 @@ func (cr *UserHandler) UserSignUp(c *gin.Context) {
 			Errors:     err.Error(),
 		})
 		return
+	}
+	if user.OTP == "" {
+		err = middleware.SendOTP(user.Email)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, response.Response{
+				StatusCode: 400,
+				Message:    "error in sending the otp",
+				Data:       nil,
+				Errors:     err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusOK, response.Response{
+			StatusCode: 200,
+			Message:    "OTP send successfully, Please enter the otp",
+			Data:       nil,
+			Errors:     nil,
+		})
+		return
+	} else {
+		if !middleware.VerifyOTP(user.Email, user.OTP) {
+			c.JSON(http.StatusBadRequest, response.Response{
+				StatusCode: 400,
+				Message:    "invalid otp",
+				Data:       nil,
+				Errors:     err.Error(),
+			})
+			return
+		}
+
 	}
 	userData, err := cr.userUseCase.UserSignUp(user)
 	if err != nil {

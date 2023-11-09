@@ -222,3 +222,120 @@ func (c *ProductDatabase) AddModel(model helper.Model) (response.Model, error) {
 		model.Image).Scan(&newModel).Error
 	return newModel, err
 }
+
+// -------------------------- Update-Model --------------------------//
+
+func (c *ProductDatabase) UpdateModel(id int, model helper.Model) (response.Model, error) {
+	var exists bool
+	isExists := `SELECT EXISTS (SELECT 1 FROM models WHERE id=$1)`
+	c.DB.Raw(isExists, id).Scan(&exists)
+	if !exists {
+		return response.Model{}, fmt.Errorf("there is no such model to update")
+	}
+
+	var updatedModel response.Model
+	query := `UPDATE models SET 
+	brand_id=$1,
+	model_name=$13, -- Corrected placeholder
+	sku=$2,
+	qty_in_stock=$3,
+	image=$4,
+	color=$5,
+	ram=$6,
+	battery=$7,
+	screen_size=$8,
+	storage=$9,
+	camera=$10,
+	price=$11,
+	updated_at=NOW()
+	WHERE id=$12
+	RETURNING
+		id,
+		model_name,
+		brand_id,
+		sku,
+		qty_in_stock,
+		color,
+		ram,
+		battery,
+		screen_size,
+		storage,
+		camera,
+		price,
+		image`
+
+	err := c.DB.Raw(query,
+		model.Brand_id,
+		model.Sku,
+		model.Qty,
+		model.Image,
+		model.Color,
+		model.Ram,
+		model.Battery,
+		model.Screen_size,
+		model.Storage,
+		model.Camera,
+		model.Price,
+		id,
+		model.Model_name).Scan(&updatedModel).Error
+
+	return updatedModel, err
+}
+
+// -------------------------- Delete-Model --------------------------//
+
+func (c *ProductDatabase) DeleteModel(id int) error {
+	var exists bool
+	isExists := `SELECT EXISTS (SELECT 1 FROM models WHERE id=$1)`
+	c.DB.Raw(isExists, id).Scan(&exists)
+	if !exists {
+		return fmt.Errorf("there is no such model to delete")
+	}
+	query := `DELETE FROM models WHERE id=?`
+	err := c.DB.Exec(query, id).Error
+	return err
+}
+
+// -------------------------- List-All-Model --------------------------//
+
+func (c *ProductDatabase) ListAllModel() ([]response.Model, error) {
+	var models []response.Model
+	getProductItemDetails := `SELECT p.brand,
+		p.description,
+		c.category AS category_name, 
+		pi.*
+		FROM brands p 
+		JOIN categories c ON p.category_id=c.id 
+		JOIN models pi ON p.id=pi.brand_id`
+
+	err := c.DB.Raw(getProductItemDetails).Scan(&models).Error
+	return models, err
+}
+
+// -------------------------- List-Single-Model --------------------------//
+
+func (c *ProductDatabase) ListModel(id int) (response.Model, error) {
+	var productItem response.Model
+	query := `SELECT p.brand,
+	p.description,
+	p.brand,
+	c.category AS category_name, 
+	pi.*
+	FROM brands p 
+	JOIN categories c ON p.category_id=c.id 
+	JOIN models pi ON p.id=pi.brand_id 
+	WHERE pi.id=$1`
+	err := c.DB.Raw(query, id).Scan(&productItem).Error
+	if err != nil {
+		return response.Model{}, err
+	}
+	if productItem.Id == 0 {
+		return response.Model{}, fmt.Errorf("there is no such product item")
+	}
+	getImages := `SELECT file_name FROM images WHERE product_id=$1`
+	err = c.DB.Raw(getImages, id).Scan(&productItem.Image).Error
+	if err != nil {
+		return response.Model{}, err
+	}
+	return productItem, nil
+}
