@@ -17,10 +17,18 @@ func ConnectDatabse(cfg config.Config) (*gorm.DB, error) {
 	db.AutoMigrate(
 		&domain.Users{},
 		&domain.Admins{},
+		&domain.SupAdmins{},
 		&domain.UserBlockInfo{},
 		&domain.Category{},
 		&domain.Brand{},
 		&domain.Model{},
+		&domain.Carts{},
+		&domain.CartItem{},
+		&domain.OrderItem{},
+		&domain.OrderStatus{},
+		&domain.PaymentType{},
+		&domain.PaymentDetails{},
+		&domain.Address{},
 		&domain.Images{},
 	)
 	return db, dbErr

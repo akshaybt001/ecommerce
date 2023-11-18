@@ -65,3 +65,72 @@ func (c *userUseCase) UserLogin(user helper.LoginReq) (string, error) {
 
 	return token, nil
 }
+
+//-------------------------- Forgot-Password --------------------------//
+
+func (c *userUseCase) ForgotPassword(forgotPass helper.ForgotPassword) error {
+	UserData, err := c.userRepo.ForgotPassword(forgotPass.Email)
+	if err != nil {
+		return fmt.Errorf("there is no such user")
+	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(forgotPass.NewPassword), 10)
+	if err != nil {
+		return fmt.Errorf("error in hashing the password")
+	}
+	forgotPass.NewPassword = string(hash)
+	if err = c.userRepo.UpdatePassword(UserData.Id, forgotPass.NewPassword); err != nil {
+		return err
+	}
+	return nil
+}
+//-------------------------- View-Profile --------------------------//
+
+func (c *userUseCase) ViewProfile(userID int) (response.Userprofile, error) {
+	profile, err := c.userRepo.ViewProfile(userID)
+	return profile, err
+}
+//-------------------------- Edit-Profile --------------------------//
+
+func (c *userUseCase) EditProfile(userID int, updatingDetails helper.Userprofile) (response.Userprofile, error) {
+	updatedProfile, err := c.userRepo.EditProfile(userID, updatingDetails)
+	return updatedProfile, err
+}
+
+//-------------------------- Update-Password --------------------------//
+
+func (c *userUseCase) UpdatePassword(userID int, Passwords helper.UpdatePassword) error {
+
+	orginalPassword, err := c.userRepo.FindPassword(userID)
+	if err != nil {
+		return err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(orginalPassword), []byte(Passwords.OldPassword))
+	if err != nil {
+		return err
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(Passwords.NewPasswoed), 10)
+	if err != nil {
+		return err
+	}
+	newPassword := string(hash)
+
+	err = c.userRepo.UpdatePassword(userID, newPassword)
+	return err
+}
+
+
+//-------------------------- Add-Address --------------------------//
+
+func (c *userUseCase) AddAddress(userID int, address helper.Address) error {
+	err := c.userRepo.AddAddress(userID, address)
+	return err
+}
+
+//-------------------------- Update-Address --------------------------//
+
+func (c *userUseCase) UpdateAddress(id, addressId int, address helper.Address) error {
+	err := c.userRepo.UpdateAddress(id, addressId, address)
+	return err
+}

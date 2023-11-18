@@ -464,7 +464,12 @@ func (cr *ProductHandler) DeleteModel(c *gin.Context) {
 
 func (cr *ProductHandler) ListAllModel(c *gin.Context) {
 
-	model, err := cr.productUsecase.ListAllModel()
+	var viewProductaItem helper.QueryParams
+
+	viewProductaItem.Page, _ = strconv.Atoi(c.Query("page"))
+	viewProductaItem.Limit, _ = strconv.Atoi(c.Query("limit"))
+
+	model, err := cr.productUsecase.ListAllModel(viewProductaItem)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.Response{
@@ -516,4 +521,51 @@ func (cr *ProductHandler) ListModel(c *gin.Context) {
 		Errors:     nil,
 	})
 
+}
+
+// -------------------------- Upload-Image --------------------------//
+
+func (cr *ProductHandler) UploadImage(c *gin.Context) {
+
+	id := c.Param("id")
+	productId, err := strconv.Atoi(id)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "cant find product id",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+
+	// Multipart form
+	form, _ := c.MultipartForm()
+
+	files := form.File["images"]
+
+	for _, file := range files {
+		// Upload the file to specific dst.
+		c.SaveUploadedFile(file, "../asset/uploads/"+file.Filename)
+
+		err := cr.productUsecase.UploadImage(file.Filename, productId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, response.Response{
+				StatusCode: 400,
+				Message:    "cant upload images",
+				Data:       nil,
+				Errors:     err.Error(),
+			})
+			return
+		}
+
+	}
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "image uploaded",
+		Data:       nil,
+		Errors:     nil,
+	})
+	return
 }

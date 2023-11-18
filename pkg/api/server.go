@@ -13,7 +13,10 @@ type ServerHTTP struct {
 func NewServerHTTP(
 	userHandler *handler.UserHandler,
 	adminHandler *handler.AdminHandler,
-	productHandler *handler.ProductHandler) *ServerHTTP {
+	productHandler *handler.ProductHandler,
+	cartHandler *handler.CartHandler,
+	orderHandler *handler.OrderHandler,
+	supadminHandler *handler.SupAdminHandler) *ServerHTTP {
 
 	engine := gin.Default()
 
@@ -21,23 +24,53 @@ func NewServerHTTP(
 	{
 		user.POST("/signup", userHandler.UserSignUp)
 		user.POST("/login", userHandler.UserLogin)
+		user.PATCH("/forgotpass", userHandler.ForgotPassword)
 
-		products := user.Group("/products")
+		model := user.Group("/model")
 		{
-			products.GET("/listallmodels", productHandler.ListAllModel)
-			products.GET("/listmodel/:id", productHandler.ListModel)
-
-			products.GET("/listallbrands", productHandler.ListAllBrand)
-			products.GET("/listbrand/:id", productHandler.ListBrand)
-
-			products.GET("/listallcategories", productHandler.ListAllCategories)
-			products.GET("/listcategories/:id", productHandler.ListCategory)
-
+			model.GET("/", productHandler.ListAllModel)
+			model.GET("/:id", productHandler.ListModel)
+		}
+		brands := user.Group("/brands")
+		{
+			brands.GET("/", productHandler.ListAllBrand)
+			brands.GET("/:id", productHandler.ListBrand)
+		}
+		category := user.Group("/category")
+		{
+			category.GET("/", productHandler.ListAllCategories)
+			category.GET("/:id", productHandler.ListCategory)
 		}
 
 		user.Use(middleware.UserAuth)
 		{
 			user.POST("/logout", userHandler.UserLogout)
+
+			profile := user.Group("/profile")
+			{
+				profile.GET("/", userHandler.ViewProfile)
+				profile.PATCH("/edit", userHandler.EditProfile)
+				profile.PATCH("/updatepassword", userHandler.UpdatePassword)
+			}
+			address := user.Group("/address")
+			{
+				address.POST("/add", userHandler.AddAddress)
+				address.PATCH("/update/:addressId", userHandler.UpdateAddress)
+			}
+			cart := user.Group("/cart")
+			{
+				cart.POST("/add/:model_id", cartHandler.AddToCart)
+				cart.PATCH("/remove/:model_id", cartHandler.RemoveFromCart)
+				cart.GET("/", cartHandler.ListCart)
+			}
+			order := user.Group("/order")
+			{
+				order.POST("/orderall/:payment_id", orderHandler.OrderAll)
+				order.PATCH("/cancel/:orderId", orderHandler.UserCancelOrder)
+				order.GET("/:orderId", orderHandler.ListOrder)
+				order.GET("/", orderHandler.ListAllOrders)
+
+			}
 		}
 
 	}
@@ -50,10 +83,8 @@ func NewServerHTTP(
 
 			adminUsers := admin.Group("/user")
 			{
-				adminUsers.GET("/list/:user_id", adminHandler.ShowUser)
-				adminUsers.GET("/listall", adminHandler.ShowAllUsers)
-				adminUsers.PATCH("/block", adminHandler.BlockUser)
-				adminUsers.PATCH("/unblock/:user_id", adminHandler.UnblockUser)
+				adminUsers.GET("/:user_id", adminHandler.ShowUser)
+				adminUsers.GET("/", adminHandler.ShowAllUsers)
 			}
 
 			category := admin.Group("/category")
@@ -61,8 +92,8 @@ func NewServerHTTP(
 				category.POST("/create", productHandler.CreateCategory)
 				category.PATCH("/update/:id", productHandler.UpdateCategory)
 				category.DELETE("/delete/:id", productHandler.DeleteCategory)
-				category.GET("/listall", productHandler.ListAllCategories)
-				category.GET("/list/:id", productHandler.ListCategory)
+				category.GET("/", productHandler.ListAllCategories)
+				category.GET("/:id", productHandler.ListCategory)
 			}
 
 			brand := admin.Group("/brand")
@@ -70,17 +101,37 @@ func NewServerHTTP(
 				brand.POST("/create", productHandler.AddBrand)
 				brand.PATCH("/update/:id", productHandler.UpdateBrand)
 				brand.DELETE("/delete/:id", productHandler.DeleteBrand)
-				brand.GET("/listall", productHandler.ListAllBrand)
-				brand.GET("/list/:id", productHandler.ListBrand)
+				brand.GET("/", productHandler.ListAllBrand)
+				brand.GET("/:id", productHandler.ListBrand)
 			}
 			model := admin.Group("/model")
 			{
 				model.POST("/add", productHandler.AddModel)
 				model.PATCH("/update/:id", productHandler.UpdateModel)
 				model.DELETE("/delete/:id", productHandler.DeleteModel)
-				model.GET("/listall", productHandler.ListAllModel)
-				model.GET("/list/:id", productHandler.ListModel)
+				model.GET("/", productHandler.ListAllModel)
+				model.GET("/:id", productHandler.ListModel)
+				model.POST("/uploadimage/:id", productHandler.UploadImage)
 
+			}
+			order := admin.Group("/order")
+			{
+				order.PATCH("/update", orderHandler.UpdateOrder)
+			}
+		}
+
+	}
+	supadmin := engine.Group("/supadmin")
+	{
+		supadmin.POST("/login", supadminHandler.SupAdminLogin)
+		supadmin.Use(middleware.SupAdminAuth)
+		{
+			supadmin.POST("/logout", supadminHandler.SupAdminLogout)
+
+			supAdminUsers := supadmin.Group("/user")
+			{
+				supAdminUsers.PATCH("/block", supadminHandler.BlockUser)
+				supAdminUsers.PATCH("/unblock/:user_id", supadminHandler.UnblockUser)
 			}
 		}
 

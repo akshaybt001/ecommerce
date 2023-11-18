@@ -39,8 +39,8 @@ type Model struct {
 }
 
 type Images struct {
-	Id        uint `gorm:"primaryKey;unique;not null"`
-	ProductId uint
-	Brand     Brand `gorm:"foreignKey:ProductId"`
-	FileName  string
+	Id       uint `gorm:"primaryKey;unique;not null"`
+	ModelId  uint
+	Model    Model `gorm:"foreignKey:ModelId"`
+	FileName string
 }

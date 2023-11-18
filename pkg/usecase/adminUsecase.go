@@ -70,16 +70,3 @@ func (c *adminUseCase) ShowAllUser() ([]response.UserDetails, error) {
 	return userDatas, err
 }
 
-// -------------------------- Block-User --------------------------//
-
-func (c *adminUseCase) BlockUser(body helper.BlockData, adminId int) error {
-	err := c.adminRepo.BlockUser(body, adminId)
-	return err
-}
-
-// -------------------------- UnBlock-User --------------------------//
-
-func (c *adminUseCase) UnblockUser(id int) error {
-	err := c.adminRepo.UnblockUser(id)
-	return err
-}

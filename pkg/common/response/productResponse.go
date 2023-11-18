@@ -28,5 +28,5 @@ type Model struct {
 	Storage      int
 	Camera       int
 	Price        int
-	Image        []string
+	Image        string
 }

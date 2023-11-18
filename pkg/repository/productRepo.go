@@ -220,6 +220,19 @@ func (c *ProductDatabase) AddModel(model helper.Model) (response.Model, error) {
 		model.Camera,
 		model.Price,
 		model.Image).Scan(&newModel).Error
+	if err != nil {
+		return newModel, err
+	}
+	selectQuery := `SELECT p.brand,
+		p.description,
+		p.brand,
+		c.category AS category_name, 
+		pi.*
+		FROM brands p 
+		JOIN categories c ON p.category_id=c.id 
+		JOIN models pi ON p.id=pi.brand_id 
+		WHERE pi.id=$1`
+	err = c.DB.Raw(selectQuery, newModel.Id).Scan(&newModel).Error
 	return newModel, err
 }
 
@@ -278,6 +291,16 @@ func (c *ProductDatabase) UpdateModel(id int, model helper.Model) (response.Mode
 		model.Price,
 		id,
 		model.Model_name).Scan(&updatedModel).Error
+	selectQuery := `SELECT p.brand,
+		p.description,
+		p.brand,
+		c.category AS category_name, 
+		pi.*
+		FROM brands p 
+		JOIN categories c ON p.category_id=c.id 
+		JOIN models pi ON p.id=pi.brand_id 
+		WHERE pi.id=$1`
+	err = c.DB.Raw(selectQuery, updatedModel.Id).Scan(&updatedModel).Error
 
 	return updatedModel, err
 }
@@ -298,7 +321,7 @@ func (c *ProductDatabase) DeleteModel(id int) error {
 
 // -------------------------- List-All-Model --------------------------//
 
-func (c *ProductDatabase) ListAllModel() ([]response.Model, error) {
+func (c *ProductDatabase) ListAllModel(queryParams helper.QueryParams) ([]response.Model, error) {
 	var models []response.Model
 	getProductItemDetails := `SELECT p.brand,
 		p.description,
@@ -308,7 +331,15 @@ func (c *ProductDatabase) ListAllModel() ([]response.Model, error) {
 		JOIN categories c ON p.category_id=c.id 
 		JOIN models pi ON p.id=pi.brand_id`
 
+	if queryParams.Limit != 0 && queryParams.Page != 0 {
+		getProductItemDetails = fmt.Sprintf("%s LIMIT %d OFFSET %d", getProductItemDetails, queryParams.Limit, (queryParams.Page-1)*queryParams.Limit)
+	}
+	if queryParams.Limit == 0 || queryParams.Page == 0 {
+		getProductItemDetails = fmt.Sprintf("%s LIMIT 10 OFFSET 0", getProductItemDetails)
+	}
+
 	err := c.DB.Raw(getProductItemDetails).Scan(&models).Error
+
 	return models, err
 }
 
@@ -332,10 +363,18 @@ func (c *ProductDatabase) ListModel(id int) (response.Model, error) {
 	if productItem.Id == 0 {
 		return response.Model{}, fmt.Errorf("there is no such product item")
 	}
-	getImages := `SELECT file_name FROM images WHERE product_id=$1`
+	getImages := `SELECT file_name FROM images WHERE model_id=$1`
 	err = c.DB.Raw(getImages, id).Scan(&productItem.Image).Error
 	if err != nil {
 		return response.Model{}, err
 	}
 	return productItem, nil
+}
+
+// -------------------------- Uploaded-Model --------------------------//
+
+func (c *ProductDatabase) UploadImage(filepath string, productId int) error {
+	uploadImage := `INSERT INTO images (model_id,file_name)VALUES($1,$2)`
+	err := c.DB.Exec(uploadImage, productId, filepath).Error
+	return err
 }

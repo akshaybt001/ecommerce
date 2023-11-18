@@ -7,9 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetAdminIdFromContext(c *gin.Context) (int, error) {
-	id := c.Value("adminId")
+func GetSupAdminIdFromContext(c *gin.Context) (int, error) {
+	id := c.Value("supadminId")
 	adminID, err := strconv.Atoi(fmt.Sprintf("%v", id))
 	return adminID, err
 }
-

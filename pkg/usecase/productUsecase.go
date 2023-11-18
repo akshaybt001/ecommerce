@@ -106,8 +106,8 @@ func (c *ProductUsecase) DeleteModel(id int) error {
 
 // -------------------------- List-All-Model --------------------------//
 
-func (c *ProductUsecase) ListAllModel() ([]response.Model, error) {
-	model, err := c.productRepo.ListAllModel()
+func (c *ProductUsecase) ListAllModel(viewProductaItem helper.QueryParams) ([]response.Model, error) {
+	model, err := c.productRepo.ListAllModel(viewProductaItem)
 	return model, err
 }
 
@@ -116,4 +116,10 @@ func (c *ProductUsecase) ListAllModel() ([]response.Model, error) {
 func (c *ProductUsecase) ListModel(id int) (response.Model, error) {
 	productItem, err := c.productRepo.ListModel(id)
 	return productItem, err
+}
+// -------------------------- Upload-Image --------------------------//
+
+func (c *ProductUsecase) UploadImage(filepath string, productId int) error {
+	err := c.productRepo.UploadImage(filepath, productId)
+	return err
 }

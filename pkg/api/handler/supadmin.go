@@ -5,27 +5,26 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-
 	"main.go/pkg/common/helper"
 	"main.go/pkg/common/response"
 	services "main.go/pkg/usecase/interface"
 )
 
-type AdminHandler struct {
-	adminUseCase services.AdminUseCase
+type SupAdminHandler struct {
+	supadminUseCase services.SupAdminUseCase
 }
 
-func NewAdminHandler(usecase services.AdminUseCase) *AdminHandler {
-	return &AdminHandler{
-		adminUseCase: usecase,
+func NewSupAdminHandler(usecase services.SupAdminUseCase) *SupAdminHandler {
+	return &SupAdminHandler{
+		supadminUseCase: usecase,
 	}
 }
 
 //-------------------------- Login --------------------------//
 
-func (cr *AdminHandler) AdminLogin(c *gin.Context) {
-	var admin helper.LoginReq
-	err := c.BindJSON(&admin)
+func (cr *SupAdminHandler) SupAdminLogin(c *gin.Context) {
+	var supadmin helper.LoginReq
+	err := c.BindJSON(&supadmin)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.Response{
 			StatusCode: 400,
@@ -35,7 +34,7 @@ func (cr *AdminHandler) AdminLogin(c *gin.Context) {
 		})
 		return
 	}
-	token, err := cr.adminUseCase.AdminLogin(admin)
+	token, err := cr.supadminUseCase.SupAdminLogin(supadmin)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.Response{
 			StatusCode: 400,
@@ -46,10 +45,10 @@ func (cr *AdminHandler) AdminLogin(c *gin.Context) {
 		return
 	}
 	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie("adminToken", token, 3600*24*30, "", "", false, true)
+	c.SetCookie("supadminToken", token, 3600*24*30, "", "", false, true)
 	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
-		Message:    "login succesfully",
+		Message:    "login successfully",
 		Data:       nil,
 		Errors:     nil,
 	})
@@ -57,21 +56,21 @@ func (cr *AdminHandler) AdminLogin(c *gin.Context) {
 
 //-------------------------- Log-Out --------------------------//
 
-func (cr *AdminHandler) AdminLogout(c *gin.Context) {
+func (cr *SupAdminHandler) SupAdminLogout(c *gin.Context) {
 	c.SetCookie("adminToken", "", -1, "", "", false, true)
 	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
-		Message:    "admin logouted",
+		Message:    "Supadmin logouted",
 		Data:       nil,
 		Errors:     nil,
 	})
 }
 
-//-------------------------- Show-Single-User --------------------------//
+//-------------------------- Block-User --------------------------//
 
-func (cr *AdminHandler) ShowUser(c *gin.Context) {
-	paramID := c.Param("user_id")
-	userID, err := strconv.Atoi(paramID)
+func (cr *SupAdminHandler) BlockUser(c *gin.Context) {
+	var body helper.BlockData
+	err := c.Bind(&body)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.Response{
 			StatusCode: 400,
@@ -81,34 +80,43 @@ func (cr *AdminHandler) ShowUser(c *gin.Context) {
 		})
 		return
 	}
-	user, err := cr.adminUseCase.ShowUser(userID)
+	err = cr.supadminUseCase.BlockUser(body)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.Response{
 			StatusCode: 400,
-			Message:    "cant find user",
+			Message:    "Can't Block",
 			Data:       nil,
 			Errors:     err.Error(),
 		})
 		return
 	}
-
 	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
-		Message:    "user details",
-		Data:       user,
+		Message:    "User Blocked",
+		Data:       nil,
 		Errors:     nil,
 	})
-
 }
 
-//-------------------------- Show-All-Users --------------------------//
+//-------------------------- UnBlock-User --------------------------//
 
-func (cr *AdminHandler) ShowAllUsers(c *gin.Context) {
-	users, err := cr.adminUseCase.ShowAllUser()
+func (cr *SupAdminHandler) UnblockUser(c *gin.Context) {
+	paramsId := c.Param("user_id")
+	id, err := strconv.Atoi(paramsId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.Response{
 			StatusCode: 400,
-			Message:    "cant find user",
+			Message:    "bind faild",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	err = cr.supadminUseCase.UnblockUser(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "cant unblock user",
 			Data:       nil,
 			Errors:     err.Error(),
 		})
@@ -117,9 +125,8 @@ func (cr *AdminHandler) ShowAllUsers(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
-		Message:    "users are",
-		Data:       users,
+		Message:    "user unblocked",
+		Data:       nil,
 		Errors:     nil,
 	})
-
 }
