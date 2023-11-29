@@ -14,6 +14,8 @@ type Config struct {
 	// TWILIOACCOUNTSID string `mapstructure:"TWILIO_ACCOUNT_SID"`
 	// TWILIOAUTHTOKEN  string `mapstructure:"TWILIO_AUTHTOKEN"`
 	// TWILIOSERVICESID string `mapstructure:"TWILIO_SERVICES_ID"`
+	RAZORPAYID       string `mapstructure:"RAZORPAY_ID"`
+	RAZORPAYSECRET   string `mapstructure:"RAZORPAY_SECRET"`
 }
 
 var envs = []string{
@@ -25,6 +27,8 @@ var envs = []string{
 	// "TWILIO_ACCOUNT_SID",
 	// "TWILIO_AUTHTOKEN",
 	// "TWILIO_SERVICES_ID",
+	"RAZORPAY_ID",
+	"RAZORPAY_SECRET",
 }
 
 func LoadConfig() (Config, error) {

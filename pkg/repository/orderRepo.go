@@ -5,6 +5,7 @@ import (
 
 	"gorm.io/gorm"
 	"main.go/pkg/common/helper"
+	"main.go/pkg/common/response"
 	"main.go/pkg/domain"
 	interfaces "main.go/pkg/repository/interface"
 )
@@ -225,14 +226,54 @@ func (c *OrderDatabase) UpdateOrder(updateOrder helper.UpdateOrder) error {
 	return nil
 }
 
-// // ListAllOrdersForAdmin implements interfaces.OrderRepository.
-// func (o *OrderDatabase) ListAllOrdersForAdmin() ([]response.AdminOrder, error) {
-// 	var orders []response.AdminOrder
-// 	findOrders := `SELECT orders.id AS order_id,orders.payment_type_id,order_statuses.status AS order_status,payment_types.type AS payment_type,payment_statuses.status AS payment_status
-// 	FROM orders JOIN order_statuses ON orders.order_status_id=order_statuses.id
-// 	JOIN payment_types ON orders.payment_type_id=payment_types.id 
-// 	JOIN payment_statuses ON orders.payment_status_id=payment_statuses.id
-//      `
-// 	err := o.DB.Raw(findOrders).Scan(&orders).Error
-// 	return orders,err
-// }
+// ListAllOrdersForAdmin implements interfaces.OrderRepository.
+func (c *OrderDatabase) ListAllOrdersForAdmin() ([]response.AdminOrder, error) {
+	var orders []response.AdminOrder
+	findOrders := `SELECT orders.id AS order_id,orders.payment_type_id,order_statuses.status AS order_status,payment_types.type AS payment_type
+	FROM orders JOIN order_statuses ON orders.order_status_id=order_statuses.id
+	JOIN payment_types ON orders.payment_type_id=payment_types.id`
+	err := c.DB.Raw(findOrders).Scan(&orders).Error
+	return orders, err
+}
+
+//-------------------------- Return-Order --------------------------//
+
+func (c *OrderDatabase) ReturnOrder(userId, orderId int) (int, error) {
+	var orders domain.Orders
+	var userWallet domain.UserWallet
+
+	wallet := `SELECT * FROM user_wallets WHERE users_id=$1`
+	err := c.DB.Raw(wallet, userId).Scan(&userWallet).Error
+	if err != nil {
+		return 0, err
+	}
+
+	getOrderDetails := `SELECT * FROM orders WHERE user_id=$1 AND id=$2`
+	err = c.DB.Raw(getOrderDetails, userId, orderId).Scan(&orders).Error
+	if err != nil {
+		return 0, err
+	}
+	if orders.OrderStatusID != 4 {
+		return 0, fmt.Errorf("the order is not deleverd")
+	}
+
+	updateWallet := `UPDATE user_wallets SET amount=amount + ? WHERE users_id=?`
+	err = c.DB.Exec(updateWallet, orders.OrderTotal, userId).Error
+	if err != nil {
+		return 0, err
+	}
+
+	returnOder := `UPDATE orders SET order_status_id=$1 WHERE id=$2`
+	err = c.DB.Exec(returnOder, 6, orderId).Error
+	if err != nil {
+		return 0, err
+	}
+	return orders.OrderTotal, nil
+
+}
+
+func (c *OrderDatabase) UserIdFromOrder(id int) (int, error) {
+	var userId int
+	err := c.DB.Raw(`SELECT user_id FROM orders WHERE id=?`, id).Scan(&userId).Error
+	return userId, err
+}

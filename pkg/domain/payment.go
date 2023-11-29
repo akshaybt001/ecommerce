@@ -11,6 +11,7 @@ type PaymentDetails struct {
 	PaymentType     PaymentType   `gorm:"foreignKey:PaymentTypeID"`
 	PaymentStatusID uint          `json:"payment_status_id,omitempty"`
 	PaymentStatus   PaymentStatus `gorm:"foreignKey:PaymentStatusID" json:"-"`
+	PaymentRef      string        `json:"payment_ref"`
 	UpdatedAt       time.Time
 }
 

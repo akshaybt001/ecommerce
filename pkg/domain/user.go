@@ -34,3 +34,10 @@ type Address struct {
 	Pincode      int    `json:"pincode " binding:"required"`
 	IsDefault    bool   `gorm:"default:false"`
 }
+
+type UserWallet struct {
+	Id      uint `gorm:"primaryKey"`
+	UsersId uint
+	Users   Users `gorm:"foreignKey:UsersId"`
+	Amount  int   `gorm:"default:0;check:Amount>=0" sql:"CHECK(Amount >= 0)"`
+}

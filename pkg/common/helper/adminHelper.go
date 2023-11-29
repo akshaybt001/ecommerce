@@ -4,3 +4,12 @@ type BlockData struct {
 	UserId uint   ` json:"userid" validate:"required"`
 	Reason string ` json:"reason" validate:"required"`
 }
+type ReportParams struct {
+	Status    int   `json:"status"`
+	Year      int    `json:"year"`
+	Month     int    `json:"month"`
+	Week      int    `json:"week"`
+	Day       int    `json:"day"`
+	StartDate string `json:"startdate"`
+	EndDate   string `json:"enddate"`
+}

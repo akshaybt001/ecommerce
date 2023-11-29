@@ -14,5 +14,6 @@ type UserUseCase interface {
 	UpdatePassword(userID int, Passwords helper.UpdatePassword) error
 	AddAddress(id int, address helper.Address) error
 	UpdateAddress(id, addressId int, address helper.Address) error
-
+	ListAllAddresses(userId int)([]response.Address,error)
+	CreateWallet(id int) error
 }

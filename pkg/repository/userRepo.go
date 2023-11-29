@@ -48,9 +48,13 @@ func (c *userDatabase) ViewProfile(userID int) (response.Userprofile, error) {
 	findProfile := `SELECT users.*, addresses.*
 	FROM users
 	LEFT JOIN addresses ON users.id = addresses.users_id
-	WHERE users.id = ? AND addresses.is_default=true`
+	AND addresses.is_default=true
+	WHERE users.id = ? `
 
 	err := c.DB.Raw(findProfile, userID).Scan(&userData).Error
+	if err != nil {
+		return userData, err
+	}
 	return userData, err
 }
 
@@ -137,4 +141,21 @@ func (c *userDatabase) UpdateAddress(id, addressId int, address helper.Address) 
 		id,
 		addressId).Error
 	return err
+}
+
+//-------------------------- Create-Wallet --------------------------//
+
+func (c *userDatabase) CreateWallet(id int) error {
+	query := `INSERT INTO user_wallets (users_id, amount) VALUES($1,0)`
+	err := c.DB.Exec(query, id).Error
+	return err
+}
+
+// -------------------------- List-All-Addresses --------------------------//
+
+func (c *userDatabase) ListAllAddresses(userId int) ([]response.Address, error) {
+	var addresses []response.Address
+	query := `SELECT * FROM addresses WHERE users_id=?`
+	err := c.DB.Raw(query, userId).Scan(&addresses).Error
+	return addresses, err
 }

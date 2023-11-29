@@ -83,12 +83,14 @@ func (c *userUseCase) ForgotPassword(forgotPass helper.ForgotPassword) error {
 	}
 	return nil
 }
+
 //-------------------------- View-Profile --------------------------//
 
 func (c *userUseCase) ViewProfile(userID int) (response.Userprofile, error) {
 	profile, err := c.userRepo.ViewProfile(userID)
 	return profile, err
 }
+
 //-------------------------- Edit-Profile --------------------------//
 
 func (c *userUseCase) EditProfile(userID int, updatingDetails helper.Userprofile) (response.Userprofile, error) {
@@ -120,7 +122,6 @@ func (c *userUseCase) UpdatePassword(userID int, Passwords helper.UpdatePassword
 	return err
 }
 
-
 //-------------------------- Add-Address --------------------------//
 
 func (c *userUseCase) AddAddress(userID int, address helper.Address) error {
@@ -132,5 +133,19 @@ func (c *userUseCase) AddAddress(userID int, address helper.Address) error {
 
 func (c *userUseCase) UpdateAddress(id, addressId int, address helper.Address) error {
 	err := c.userRepo.UpdateAddress(id, addressId, address)
+	return err
+}
+
+// -------------------------- List-All-Addresses --------------------------//
+
+func (c *userUseCase) ListAllAddresses(userId int) ([]response.Address, error) {
+	addresses, err := c.userRepo.ListAllAddresses(userId)
+	return addresses, err
+}
+
+//-------------------------- Create-Wallet --------------------------//
+
+func (c *userUseCase) CreateWallet(id int) error {
+	err := c.userRepo.CreateWallet(id)
 	return err
 }

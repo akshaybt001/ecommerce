@@ -15,5 +15,7 @@ type UserRepository interface {
 	FindPassword(id int) (string, error)
 	UpdatePassword(id int, newPassword string) error
 	AddAddress(id int, address helper.Address) error
+	ListAllAddresses(userId int)([]response.Address,error)
 	UpdateAddress(userID, addressID int, address helper.Address) error
+	CreateWallet(id int) error
 }

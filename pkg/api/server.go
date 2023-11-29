@@ -16,15 +16,21 @@ func NewServerHTTP(
 	productHandler *handler.ProductHandler,
 	cartHandler *handler.CartHandler,
 	orderHandler *handler.OrderHandler,
+	paymentHandler *handler.PaymentHandler,
 	supadminHandler *handler.SupAdminHandler) *ServerHTTP {
 
 	engine := gin.Default()
+
+	engine.GET("/payment-handler", paymentHandler.PaymentSuccess)
 
 	user := engine.Group("/user")
 	{
 		user.POST("/signup", userHandler.UserSignUp)
 		user.POST("/login", userHandler.UserLogin)
 		user.PATCH("/forgotpass", userHandler.ForgotPassword)
+
+		//payment
+		user.GET("/order/online-payment/:orderId", paymentHandler.CreateRazorpayPayment)
 
 		model := user.Group("/model")
 		{
@@ -56,6 +62,7 @@ func NewServerHTTP(
 			{
 				address.POST("/add", userHandler.AddAddress)
 				address.PATCH("/update/:addressId", userHandler.UpdateAddress)
+				address.GET("/", userHandler.ListAllAddresses)
 			}
 			cart := user.Group("/cart")
 			{
@@ -69,7 +76,12 @@ func NewServerHTTP(
 				order.PATCH("/cancel/:orderId", orderHandler.UserCancelOrder)
 				order.GET("/:orderId", orderHandler.ListOrder)
 				order.GET("/", orderHandler.ListAllOrders)
+				order.PATCH("/return/:orderId", orderHandler.ReturnOrder)
 
+			}
+			wallet := user.Group("/wallet")
+			{
+				wallet.GET("/", paymentHandler.DisplayWallet)
 			}
 		}
 
@@ -104,7 +116,7 @@ func NewServerHTTP(
 				brand.GET("/", productHandler.ListAllBrand)
 				brand.GET("/:id", productHandler.ListBrand)
 			}
-			model := admin.Group("/model")
+			model := admin.Group("/product")
 			{
 				model.POST("/add", productHandler.AddModel)
 				model.PATCH("/update/:id", productHandler.UpdateModel)
@@ -114,9 +126,21 @@ func NewServerHTTP(
 				model.POST("/uploadimage/:id", productHandler.UploadImage)
 
 			}
+
+			dashboard := admin.Group("/dashboard")
+			{
+				dashboard.GET("/get", adminHandler.AdminDashBoard)
+			}
+
 			order := admin.Group("/order")
 			{
 				order.PATCH("/update", orderHandler.UpdateOrder)
+				order.GET("/", orderHandler.ListAllOrderForAdmin)
+			}
+
+			sales := admin.Group("/sales")
+			{
+				sales.GET("/", adminHandler.ViewSalesReport)
 			}
 		}
 
@@ -140,5 +164,8 @@ func NewServerHTTP(
 	return &ServerHTTP{engine: engine}
 }
 func (sh *ServerHTTP) Start() {
+
+	sh.engine.LoadHTMLGlob("../template/*.html")
+
 	sh.engine.Run()
 }

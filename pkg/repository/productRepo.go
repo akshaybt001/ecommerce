@@ -180,6 +180,9 @@ func (c *ProductDatabase) ListBrand(id int) (response.Brands, error) {
 
 func (c *ProductDatabase) AddModel(model helper.Model) (response.Model, error) {
 	var newModel response.Model
+	if model.Price < 0 {
+		return response.Model{}, fmt.Errorf("can't add non negative value")
+	}
 	query := `INSERT INTO models (brand_id,
 		model_name,
 		sku,

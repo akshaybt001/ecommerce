@@ -1,8 +1,9 @@
 package response
 
+
 type AdminOrder struct {
-	OrderId       uint
-	PaymentTypeId uint
-	OrderStatus   string
-	PaymentStatus string
+	OrderID       int    `gorm:"column:order_id"`
+	PaymentTypeID int    `gorm:"column:payment_type_id"`
+	OrderStatus   string `gorm:"column:order_status"`
+	PaymentType   string `gorm:"column:payment_type"`
 }

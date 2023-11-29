@@ -123,3 +123,65 @@ func (cr *AdminHandler) ShowAllUsers(c *gin.Context) {
 	})
 
 }
+
+func (cr *AdminHandler) AdminDashBoard(c *gin.Context) {
+	var filterDash helper.ReportParams
+
+	filterDash.Status, _ = strconv.Atoi(c.Query("status"))
+	filterDash.Day, _ = strconv.Atoi(c.Query("day"))
+	filterDash.Week, _ = strconv.Atoi(c.Query("week"))
+	filterDash.Month, _ = strconv.Atoi(c.Query("month"))
+	filterDash.Year, _ = strconv.Atoi(c.Query("year"))
+	filterDash.StartDate = c.Query("startdate")
+	filterDash.EndDate = c.Query("enddate")
+
+	dashBoard, err := cr.adminUseCase.GetDashBoard(filterDash)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "cant get dashboard",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+
+	}
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "Dash board",
+		Data:       dashBoard,
+		Errors:     nil,
+	})
+}
+func (cr *AdminHandler) ViewSalesReport(c *gin.Context) {
+
+	var filterReport helper.ReportParams
+
+	filterReport.Status,_ = strconv.Atoi(c.Query("status")) 
+	filterReport.Day, _ = strconv.Atoi(c.Query("day"))
+	filterReport.Week, _ = strconv.Atoi(c.Query("week"))
+	filterReport.Month, _ = strconv.Atoi(c.Query("month"))
+	filterReport.Year, _ = strconv.Atoi(c.Query("year"))
+	filterReport.StartDate = c.Query("startdate")
+	filterReport.EndDate = c.Query("enddate")
+
+	sales, err := cr.adminUseCase.ViewSalesReport(filterReport)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "cant get sales report",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	
+
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "Sales report",
+		Data:       sales,
+		Errors:     nil,
+	})
+
+}

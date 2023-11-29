@@ -89,6 +89,16 @@ func (cr *UserHandler) UserSignUp(c *gin.Context) {
 		})
 		return
 	}
+	err = cr.userUseCase.CreateWallet(userData.Id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "unable to create wallet",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
 	c.JSON(http.StatusCreated, response.Response{
 		StatusCode: 201,
 		Message:    "user signup Successfully",
@@ -414,6 +424,35 @@ func (cr *UserHandler) UpdateAddress(c *gin.Context) {
 		StatusCode: 200,
 		Message:    "address updated",
 		Data:       address,
+		Errors:     nil,
+	})
+}
+func (cr *UserHandler) ListAllAddresses(c *gin.Context) {
+	userId, err := handlerutil.GetUserIdFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "cant find userid",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	addresses, err := cr.userUseCase.ListAllAddresses(userId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "can't find addresses",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "Addresses are",
+		Data:       addresses,
 		Errors:     nil,
 	})
 }

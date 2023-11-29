@@ -62,6 +62,7 @@ func (cr *OrderHandler) OrderAll(c *gin.Context) {
 		Errors:     nil,
 	})
 }
+
 //-------------------------- Cancel-Order --------------------------//
 
 func (cr *OrderHandler) UserCancelOrder(c *gin.Context) {
@@ -204,6 +205,67 @@ func (cr *OrderHandler) UpdateOrder(c *gin.Context) {
 		StatusCode: 200,
 		Message:    "order updated ",
 		Data:       nil,
+		Errors:     nil,
+	})
+}
+
+//-------------------------- Return-Order --------------------------//
+
+func (cr *OrderHandler) ReturnOrder(c *gin.Context) {
+	userId, err := handlerutil.GetUserIdFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "cant find userid",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	paramsId := c.Param("orderId")
+	orderId, err := strconv.Atoi(paramsId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "bind faild",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+
+	returnAmount, err := cr.OrderUseCase.ReturnOrder(userId, orderId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "can't return order",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "order returnd ",
+		Data:       returnAmount,
+		Errors:     nil,
+	})
+}
+func (cr *OrderHandler) ListAllOrderForAdmin(c *gin.Context) {
+	order, err := cr.OrderUseCase.ListAllOrderForAdmin()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "error listing all orders",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "orders listed successfully",
+		Data:       order,
 		Errors:     nil,
 	})
 }

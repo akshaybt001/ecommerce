@@ -70,3 +70,12 @@ func (c *adminUseCase) ShowAllUser() ([]response.UserDetails, error) {
 	return userDatas, err
 }
 
+func (c *adminUseCase) GetDashBoard(reports helper.ReportParams)(response.DashBoard ,error){
+	dashBoard,err:=c.adminRepo.GetDashBoard(reports)
+	return dashBoard,err
+}
+
+func (c *adminUseCase) ViewSalesReport(reports helper.ReportParams)([]response.SalesReport,error){
+	sales,err:=c.adminRepo.ViewSalesReport(reports)
+	return sales,err
+}
