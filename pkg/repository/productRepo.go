@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"strings"
 
 	"gorm.io/gorm"
 	"main.go/pkg/common/helper"
@@ -326,13 +327,35 @@ func (c *ProductDatabase) DeleteModel(id int) error {
 
 func (c *ProductDatabase) ListAllModel(queryParams helper.QueryParams) ([]response.Model, error) {
 	var models []response.Model
-	getProductItemDetails := `SELECT p.brand,
-		p.description,
-		c.category AS category_name, 
-		pi.*
-		FROM brands p 
-		JOIN categories c ON p.category_id=c.id 
-		JOIN models pi ON p.id=pi.brand_id`
+
+	// getProductItemDetails := `SELECT p.brand,p.description,c.category AS category_name, pi.*
+	// 	FROM brands p
+	// 	JOIN categories c ON p.category_id=c.id
+	// 	JOIN models pi ON p.id=pi.brand_id`
+	getProductItemDetails := `
+	SELECT models.* ,categories.category AS category_name ,brands.brand, brands.description ,
+	(discounts.discount_percent/100)*models.price AS discount_price,
+	models.price-((discounts.discount_percent/100)*models.price) AS discounted_price,
+	images.file_name  AS image
+	FROM models
+	JOIN brands ON models.brand_id=brands.id
+	JOIN categories ON brands.category_id=categories.id
+	LEFT JOIN images ON models.id=images.model_id
+	LEFT JOIN discounts ON models.brand_id=discounts.brand_id AND discounts.expiration_date > NOW()  AND discounts.minimum_purchase_amount <= models.price`
+
+	if queryParams.Query != "" && queryParams.Filter != "" {
+		getProductItemDetails = fmt.Sprintf("%s WHERE LOWER(%s) LIKE '%%%s%%'", getProductItemDetails, queryParams.Filter, strings.ToLower(queryParams.Query))
+	}
+
+	if queryParams.SortBy != "" {
+		if queryParams.SortDesc {
+			getProductItemDetails = fmt.Sprintf("%s ORDER BY %s DESC", getProductItemDetails, queryParams.SortBy)
+		} else {
+			getProductItemDetails = fmt.Sprintf("%s ORDER BY %s ASC", getProductItemDetails, queryParams.SortBy)
+		}
+	} else {
+		getProductItemDetails = fmt.Sprintf("%s ORDER BY models.created_at DESC", getProductItemDetails)
+	}
 
 	if queryParams.Limit != 0 && queryParams.Page != 0 {
 		getProductItemDetails = fmt.Sprintf("%s LIMIT %d OFFSET %d", getProductItemDetails, queryParams.Limit, (queryParams.Page-1)*queryParams.Limit)
@@ -350,15 +373,27 @@ func (c *ProductDatabase) ListAllModel(queryParams helper.QueryParams) ([]respon
 
 func (c *ProductDatabase) ListModel(id int) (response.Model, error) {
 	var productItem response.Model
-	query := `SELECT p.brand,
-	p.description,
-	p.brand,
-	c.category AS category_name, 
-	pi.*
-	FROM brands p 
-	JOIN categories c ON p.category_id=c.id 
-	JOIN models pi ON p.id=pi.brand_id 
-	WHERE pi.id=$1`
+	// query := `SELECT p.brand,
+	// p.description,
+	// p.brand,
+	// c.category AS category_name,
+	// pi.*
+	// FROM brands p
+	// JOIN categories c ON p.category_id=c.id
+	// JOIN models pi ON p.id=pi.brand_id
+	// WHERE pi.id=$1`
+	query := `
+	SELECT models.* ,categories.category AS category_name ,brands.brand, brands.description ,
+	(discounts.discount_percent/100)*models.price AS discount_price,
+	models.price-((discounts.discount_percent/100)*models.price) AS discounted_price,
+	images.file_name  AS image
+	FROM models
+	JOIN brands ON models.brand_id=brands.id
+	JOIN categories ON brands.category_id=categories.id
+	LEFT JOIN images ON models.id=images.model_id
+	LEFT JOIN discounts ON models.brand_id=discounts.brand_id AND discounts.expiration_date > NOW()  AND discounts.minimum_purchase_amount <= models.price
+	WHERE models.id=?`
+
 	err := c.DB.Raw(query, id).Scan(&productItem).Error
 	if err != nil {
 		return response.Model{}, err
@@ -366,11 +401,11 @@ func (c *ProductDatabase) ListModel(id int) (response.Model, error) {
 	if productItem.Id == 0 {
 		return response.Model{}, fmt.Errorf("there is no such product item")
 	}
-	getImages := `SELECT file_name FROM images WHERE model_id=$1`
-	err = c.DB.Raw(getImages, id).Scan(&productItem.Image).Error
-	if err != nil {
-		return response.Model{}, err
-	}
+	// getImages := `SELECT file_name FROM images WHERE model_id=$1`
+	// err = c.DB.Raw(getImages, id).Scan(&productItem.Image).Error
+	// if err != nil {
+	// 	return response.Model{}, err
+	// }
 	return productItem, nil
 }
 

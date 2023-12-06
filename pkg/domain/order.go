@@ -17,7 +17,9 @@ type Orders struct {
 	ShippingAddress uint
 	OrderTotal      int
 	OrderStatusID   uint
-	OrderStatus     OrderStatus `gorm:"foreignKey:OrderStatusID" json:"-"`
+	OrderStatus     OrderStatus   `gorm:"foreignKey:OrderStatusID" json:"-"`
+	PaymentStatusID uint          `json:"payment_status_id,omitempty"`
+	PaymentStatus   PaymentStatus `gorm:"foreignKey:PaymentStatusID" json:"-"`
 }
 type OrderItem struct {
 	Id       uint `gorm:"primaryKey;unique;not null"`

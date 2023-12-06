@@ -31,6 +31,7 @@ func ConnectDatabse(cfg config.Config) (*gorm.DB, error) {
 		&domain.Address{},
 		&domain.Images{},
 		&domain.UserWallet{},
+		&domain.Discount{},
 	)
 	return db, dbErr
 }

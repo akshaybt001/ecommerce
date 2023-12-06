@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/csv"
 	"net/http"
 	"strconv"
 
@@ -157,7 +158,7 @@ func (cr *AdminHandler) ViewSalesReport(c *gin.Context) {
 
 	var filterReport helper.ReportParams
 
-	filterReport.Status,_ = strconv.Atoi(c.Query("status")) 
+	filterReport.Status, _ = strconv.Atoi(c.Query("status"))
 	filterReport.Day, _ = strconv.Atoi(c.Query("day"))
 	filterReport.Week, _ = strconv.Atoi(c.Query("week"))
 	filterReport.Month, _ = strconv.Atoi(c.Query("month"))
@@ -175,7 +176,6 @@ func (cr *AdminHandler) ViewSalesReport(c *gin.Context) {
 		})
 		return
 	}
-	
 
 	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
@@ -183,5 +183,61 @@ func (cr *AdminHandler) ViewSalesReport(c *gin.Context) {
 		Data:       sales,
 		Errors:     nil,
 	})
+
+}
+func (cr *AdminHandler) DownloadSalesReport(c *gin.Context) {
+
+	var filterReport helper.ReportParams
+
+	filterReport.Status, _ = strconv.Atoi(c.Query("status"))
+	filterReport.Day, _ = strconv.Atoi(c.Query("day"))
+	filterReport.Week, _ = strconv.Atoi(c.Query("week"))
+	filterReport.Month, _ = strconv.Atoi(c.Query("month"))
+	filterReport.Year, _ = strconv.Atoi(c.Query("year"))
+	filterReport.StartDate = c.Query("startdate")
+	filterReport.EndDate = c.Query("endday")
+
+	sales, err := cr.adminUseCase.ViewSalesReport(filterReport)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "cant get sales report",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	// Set headers so browser will download the file
+	c.Header("Content-Type", "text/csv")
+	c.Header("Content-Disposition", "attachment;filename=sales.csv")
+
+	// c.Header("Content-Type", "text/csv")
+	// c.Header("Content-Disposition", "attachment;filename=sales.csv")
+
+	// Create a CSV writer using our response writer as our io.Writer
+	wr := csv.NewWriter(c.Writer)
+
+	// Write CSV header row
+	headers := []string{"Name", "PaymentType", "OrderDate", "OrderTotal"}
+	if err := wr.Write(headers); err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	// Write data rows
+	for _, sale := range sales {
+		row := []string{sale.Name, sale.PaymentType, sale.OrderDate.Format("2006-01-02 15:04:05"), strconv.Itoa(sale.OrderTotal)}
+		if err := wr.Write(row); err != nil {
+			c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+	}
+
+	// Flush the writer's buffer to ensure all data is written to the client
+	wr.Flush()
+	if err := wr.Error(); err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
 
 }

@@ -14,19 +14,21 @@ type Brands struct {
 }
 
 type Model struct {
-	Id           uint
-	ModelName    string
-	Brand        string
-	Description  string
-	CategoryName string
-	Sku          string
-	QtyInStock   int
-	Color        string
-	Ram          int
-	Battery      int
-	ScreenSize   float64
-	Storage      int
-	Camera       int
-	Price        int
-	Image        string
+	Id              uint
+	ModelName       string
+	Brand           string
+	Description     string
+	CategoryName    string
+	Sku             string
+	QtyInStock      int
+	Color           string
+	Ram             int
+	Battery         int
+	ScreenSize      float64
+	Storage         int
+	Camera          int
+	Price           int
+	DiscountPrice   float64 `json:"discount_price,omitempty"`
+	DiscountedPrice float64 `json:"discounted_price,omitempty"`
+	Image           string
 }

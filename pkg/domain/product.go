@@ -32,7 +32,7 @@ type Model struct {
 	Screen_size  float64
 	Storage      int
 	Camera       int
-	Price        int
+	Price        float64
 	Image        string
 	Created_at   time.Time
 	Updated_at   time.Time

@@ -21,6 +21,10 @@ func NewOrderRepository(DB *gorm.DB) interfaces.OrderRepository {
 //-------------------------- Order-All --------------------------//
 
 func (c *OrderDatabase) OrderAll(id, paymentTypeId int) (domain.Orders, error) {
+
+	paymentStatus := 1
+	orderStatus := 1
+
 	tx := c.DB.Begin()
 
 	//Find the cart id and tottal of the cart
@@ -44,6 +48,57 @@ func (c *OrderDatabase) OrderAll(id, paymentTypeId int) (domain.Orders, error) {
 		tx.Rollback()
 		return domain.Orders{}, fmt.Errorf("no items in cart")
 	}
+	// var modelIds []int
+	// findModelIds := `SELECT model_id FROM cart_items WHERE carts_id = $1;`
+	// err = tx.Raw(findModelIds, cart.Id).Scan(&modelIds).Error
+	// if err != nil {
+	// 	tx.Rollback()
+	// 	return domain.Orders{}, err
+	// }
+	// var brandIds []int
+	// for i, modelId := range modelIds {
+	// 	var productdetails domain.Model
+	// 	findproductdetails := `SELECT models.*,discounts.*  FROM models LEFT JOIN discounts ON discounts.brand_id=models.brand_id AND expiration_date WHERE id=$1`
+	// 	err = tx.Raw(findproductdetails, modelId).Scan(&productdetails).Error
+	// 	if err != nil {
+	// 		tx.Rollback()
+	// 		return domain.Orders{}, err
+	// 	}
+
+	// 	brandIds = append(brandIds, int(productdetails.Brand_id))
+	// 		 // Check discount for each item
+	// 		 findDiscount := `SELECT * FROM discounts WHERE brand_id = ? AND expiration_date > NOW();`
+	// 		 var discount domain.Discount
+	// 		 err = tx.Raw(findDiscount, brandIds[i]).Scan(&discount).Error
+	// 		 if err != nil {
+	// 			 tx.Rollback()
+	// 			 return domain.Orders{}, err
+	// 		 }
+	//   // Add error message for expired discount
+	// if discount.Id == 0 || discount.ExpirationDate.Before(time.Now()) {
+	// 	return domain.Orders{}, fmt.Errorf("Discount expired! Please add item again to benefit from the discount.")
+	// }
+
+	// }
+
+	var expiredCartItems []domain.CartItem
+	findExpiredCartItems := `SELECT cart_items.*
+	FROM cart_items
+	JOIN models ON models.id = cart_items.model_id
+	JOIN discounts ON models.brand_id = discounts.brand_id
+	WHERE cart_items.is_discounted = true
+		AND models.price > discounts.minimum_purchase_amount
+		AND discounts.expiration_date < NOW()
+		AND cart_items.carts_id = ?`
+	err = tx.Raw(findExpiredCartItems, cart.Id).Scan(&expiredCartItems).Error
+	if err != nil {
+		tx.Rollback()
+		return domain.Orders{}, fmt.Errorf("there seems to be items in your cart whose offers have expired, please remove them from your cart and add them again")
+	}
+	if len(expiredCartItems) != 0 {
+		return domain.Orders{}, fmt.Errorf("there seems to be items in your cart whose offers have expired, please remove them from your cart and add them again")
+	}
+
 	//Find the default address of the user
 	var addressId int
 	address := `SELECT id FROM addresses WHERE users_id=$1 AND is_default=true`
@@ -56,12 +111,37 @@ func (c *OrderDatabase) OrderAll(id, paymentTypeId int) (domain.Orders, error) {
 		tx.Rollback()
 		return domain.Orders{}, fmt.Errorf("add address pls")
 	}
+	if paymentTypeId == 3 {
+		var userWallet domain.UserWallet
+
+		wallet := `SELECT * FROM user_wallets WHERE users_id=$1`
+		err := c.DB.Raw(wallet, id).Scan(&userWallet).Error
+		if err != nil {
+			return domain.Orders{}, err
+		}
+
+		if cart.Total <= userWallet.Amount {
+			userWallet.Amount = userWallet.Amount - cart.Total
+			updateWallet := `UPDATE user_wallets SET amount=$1 WHERE users_id=$2`
+			err := c.DB.Raw(updateWallet, userWallet.Amount, id).Scan(&userWallet).Error
+			if err != nil {
+				return domain.Orders{}, err
+			}
+
+			// cart.Total = 0
+			paymentStatus = 3
+			orderStatus = 2
+		} else {
+			return domain.Orders{}, fmt.Errorf("Wallet does not have enough money")
+		}
+
+	}
 
 	//Add the details to the orders and return the orderid
 	var order domain.Orders
-	insetOrder := `INSERT INTO orders (user_id,order_date,payment_type_id,shipping_address,order_total,order_status_id)
-		VALUES($1,NOW(),$2,$3,$4,1) RETURNING *`
-	err = tx.Raw(insetOrder, id, paymentTypeId, addressId, cart.Total).Scan(&order).Error
+	insetOrder := `INSERT INTO orders (user_id,order_date,payment_type_id,shipping_address,order_total,order_status_id,payment_status_id)
+		VALUES($1,NOW(),$2,$3,$4,$5,$6) RETURNING *`
+	err = tx.Raw(insetOrder, id, paymentTypeId, addressId, cart.Total, orderStatus, paymentStatus).Scan(&order).Error
 	if err != nil {
 		tx.Rollback()
 		return domain.Orders{}, err
@@ -127,7 +207,7 @@ func (c *OrderDatabase) OrderAll(id, paymentTypeId int) (domain.Orders, error) {
 			payment_status_id,
 			updated_at)
 			VALUES($1,$2,$3,$4,NOW())`
-	if err = tx.Exec(createPaymentDetails, order.Id, order.OrderTotal, paymentTypeId, 1).Error; err != nil {
+	if err = tx.Exec(createPaymentDetails, order.Id, order.OrderTotal, paymentTypeId, paymentStatus).Error; err != nil {
 		tx.Rollback()
 		return domain.Orders{}, err
 	}
@@ -142,6 +222,7 @@ func (c *OrderDatabase) OrderAll(id, paymentTypeId int) (domain.Orders, error) {
 //-------------------------- Cancel-Order --------------------------//
 
 func (c *OrderDatabase) UserCancelOrder(orderId, userId int) error {
+
 	tx := c.DB.Begin()
 
 	//find the orderd product and qty and update the product_items with those
@@ -163,6 +244,41 @@ func (c *OrderDatabase) UserCancelOrder(orderId, userId int) error {
 			return err
 		}
 	}
+
+	var orders domain.Orders
+	var payment domain.PaymentDetails
+
+	findOrders := `SELECT * FROM orders WHERE id=?`
+	err = tx.Raw(findOrders, orderId).Scan(&orders).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	findPayment := `SELECT * FROM orders WHERE id=?`
+	err = tx.Raw(findPayment, orderId).Scan(&payment).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if orders.PaymentTypeId == 2 || orders.PaymentTypeId == 3 && payment.PaymentStatusID == 3 {
+		var userWallet domain.UserWallet
+
+		wallet := `SELECT * FROM user_wallets WHERE users_id=$1`
+		err := c.DB.Raw(wallet, userId).Scan(&userWallet).Error
+		if err != nil {
+			return err
+		}
+
+		updateWallet := `UPDATE user_wallets SET amount=amount + ? WHERE users_id=?`
+		err = c.DB.Exec(updateWallet, orders.OrderTotal, userId).Error
+		if err != nil {
+			return err
+		}
+
+	}
+
 	//Remove the items from order_items
 	removeItems := `DELETE FROM order_items WHERE orders_id=$1`
 	err = tx.Exec(removeItems, orderId).Error
@@ -171,8 +287,8 @@ func (c *OrderDatabase) UserCancelOrder(orderId, userId int) error {
 		return err
 	}
 	//update the order status as canceled
-	cancelOrder := `UPDATE orders SET order_status_id=$1 WHERE id=$2 AND user_id=$3`
-	err = tx.Exec(cancelOrder, 5, orderId, userId).Error
+	cancelOrder := `UPDATE orders SET order_status_id=$1,payment_status_id=$2 WHERE id=$3 AND user_id=$4`
+	err = tx.Exec(cancelOrder, 5, 2, orderId, userId).Error
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -183,6 +299,7 @@ func (c *OrderDatabase) UserCancelOrder(orderId, userId int) error {
 		return err
 	}
 	return nil
+
 }
 
 //-------------------------- List-Order --------------------------//

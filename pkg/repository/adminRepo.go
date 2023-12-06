@@ -82,10 +82,10 @@ func (c *adminDatabase) GetDashBoard(reports helper.ReportParams) (response.Dash
 			JOIN order_items oi on o.id=oi.orders_id`
 
 	getTotalUsers := `SELECT COUNT(id)AS TotalUsers FROM users`
-	
-	if reports.Status!=0{
-		getDasheBoard=fmt.Sprintf("%s WHERE o.order_id=%d",getDasheBoard,reports.Status)
-	} else{
+
+	if reports.Status != 0 {
+		getDasheBoard = fmt.Sprintf("%s WHERE o.id=%d", getDasheBoard, reports.Status)
+	} else {
 		getDasheBoard = fmt.Sprintf("%s WHERE o.order_status_id is not null", getDasheBoard)
 
 	}
@@ -134,10 +134,10 @@ func (c *adminDatabase) ViewSalesReport(reports helper.ReportParams) ([]response
 		FROM orders o JOIN users u ON u.id=o.user_id 
 		JOIN payment_types pt ON o.payment_type_id= pt.id`
 
-	if reports.Status!=0{
-		getReports=fmt.Sprintf("%s WHERE o.order_status_id=%d", getReports,reports.Status)
-	}else{
-		getReports=fmt.Sprintf("%s WHERE o.order_status_id is not null",getReports)
+	if reports.Status != 0 {
+		getReports = fmt.Sprintf("%s WHERE o.order_status_id=%d", getReports, reports.Status)
+	} else {
+		getReports = fmt.Sprintf("%s WHERE o.order_status_id is not null", getReports)
 	}
 	if reports.Day != 0 && reports.Month != 0 && reports.Year != 0 {
 		date := controllers.GetDate(reports.Year, reports.Month, reports.Week, reports.Day)

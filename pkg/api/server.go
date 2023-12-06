@@ -17,6 +17,7 @@ func NewServerHTTP(
 	cartHandler *handler.CartHandler,
 	orderHandler *handler.OrderHandler,
 	paymentHandler *handler.PaymentHandler,
+	discounthandler *handler.DiscountHandler,
 	supadminHandler *handler.SupAdminHandler) *ServerHTTP {
 
 	engine := gin.Default()
@@ -141,6 +142,16 @@ func NewServerHTTP(
 			sales := admin.Group("/sales")
 			{
 				sales.GET("/", adminHandler.ViewSalesReport)
+				sales.GET("/download", adminHandler.DownloadSalesReport)
+
+			}
+			discount := admin.Group("/discount")
+			{
+				discount.POST("/add", discounthandler.AddDiscount)
+				discount.PATCH("/edit/:id", discounthandler.EditDiscount)
+				discount.DELETE("delete/:id", discounthandler.DeleteDiscount)
+				discount.GET("/", discounthandler.ListAllDiscount)
+				discount.GET("/:id", discounthandler.ListDiscount)
 			}
 		}
 

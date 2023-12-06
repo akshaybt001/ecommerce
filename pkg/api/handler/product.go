@@ -468,6 +468,10 @@ func (cr *ProductHandler) ListAllModel(c *gin.Context) {
 
 	viewProductaItem.Page, _ = strconv.Atoi(c.Query("page"))
 	viewProductaItem.Limit, _ = strconv.Atoi(c.Query("limit"))
+	viewProductaItem.Query = c.Query("query")
+	viewProductaItem.Filter = c.Query("filter")
+	viewProductaItem.SortBy = c.Query("sort_by")
+	viewProductaItem.SortDesc, _ = strconv.ParseBool(c.Query("sort_desc"))
 
 	model, err := cr.productUsecase.ListAllModel(viewProductaItem)
 
