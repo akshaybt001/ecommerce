@@ -78,6 +78,7 @@ func NewServerHTTP(
 				order.GET("/:orderId", orderHandler.ListOrder)
 				order.GET("/", orderHandler.ListAllOrders)
 				order.PATCH("/return/:orderId", orderHandler.ReturnOrder)
+				order.GET("/:orderId/download", orderHandler.InvoiceDownload)
 
 			}
 			wallet := user.Group("/wallet")

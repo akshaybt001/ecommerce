@@ -14,3 +14,8 @@ type SalesReport struct {
 	OrderDate   time.Time
 	OrderTotal  int
 }
+type AdminData struct {
+	Id    int
+	Name  string
+	Email string
+}

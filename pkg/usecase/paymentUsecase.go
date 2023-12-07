@@ -7,7 +7,6 @@ import (
 	"main.go/pkg/common/helper"
 	"main.go/pkg/common/response"
 	"main.go/pkg/config"
-	"main.go/pkg/domain"
 	interfaces "main.go/pkg/repository/interface"
 	services "main.go/pkg/usecase/interface"
 )
@@ -26,28 +25,30 @@ func NewPaymentuseCase(paymentRepo interfaces.PaymentRepository, orderRepo inter
 	}
 }
 
-func (c *PaymentUseCase) CreateRazorpayPayment(orderId int) (domain.Orders, string, int, error) {
+func (c *PaymentUseCase) CreateRazorpayPayment(orderId int) (response.OrderResponse, string, int, error) {
 	paymentDetails, err := c.paymentRepo.ViewPaymentDetails(orderId)
 	if err != nil {
-		return domain.Orders{}, "", 0, err
+		return response.OrderResponse{}, "", 0, err
 	}
 
 	if paymentDetails.PaymentStatusID == 3 {
-		return domain.Orders{}, "", 0, fmt.Errorf("payment already completed")
+		return response.OrderResponse{}, "", 0, fmt.Errorf("payment already completed")
 	}
 	userId, err := c.orderRepo.UserIdFromOrder(orderId)
 	if err != nil {
-		return domain.Orders{}, "", 0, err
+		return response.OrderResponse{}, "", 0, err
 	}
 	fmt.Println("user id ", userId)
 	//fetch order details from the db
 	order, err := c.orderRepo.ListOrder(userId, orderId)
 	if err != nil {
-		return domain.Orders{}, "", userId, err
+		return response.OrderResponse{}, "", userId, err
 	}
-	fmt.Println(order.Id)
+	fmt.Println(order.OrderDate)
+	fmt.Println("order is ", order.Id)
+	fmt.Println("order amt ", order.OrderTotal)
 	if order.Id == 0 {
-		return domain.Orders{}, "", userId, fmt.Errorf("no such order found")
+		return response.OrderResponse{}, "", userId, fmt.Errorf("no such order found")
 	}
 	client := razorpay.NewClient(c.cfg.RAZORPAYID, c.cfg.RAZORPAYSECRET)
 
@@ -59,14 +60,14 @@ func (c *PaymentUseCase) CreateRazorpayPayment(orderId int) (domain.Orders, stri
 
 	body, err := client.Order.Create(data, nil)
 	if err != nil {
-		return domain.Orders{}, "", userId, err
+		return response.OrderResponse{}, "", userId, err
 	}
 
 	value := body["id"]
 	razorpayID := value.(string)
+
 	return order, razorpayID, userId, err
 }
-
 
 func (c *PaymentUseCase) UpdatePaymentDetails(paymentVerifier helper.PaymentVerification) error {
 	paymentDetails, err := c.paymentRepo.ViewPaymentDetails(paymentVerifier.OrderID)
@@ -89,6 +90,7 @@ func (c *PaymentUseCase) UpdatePaymentDetails(paymentVerifier helper.PaymentVeri
 	}
 	return nil
 }
+
 // -------------------------- wallet --------------------------//
 
 func (c *PaymentUseCase) DisplayWallet(userId int) (response.Wallet, error) {

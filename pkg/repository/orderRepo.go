@@ -304,10 +304,22 @@ func (c *OrderDatabase) UserCancelOrder(orderId, userId int) error {
 
 //-------------------------- List-Order --------------------------//
 
-func (c *OrderDatabase) ListOrder(userId, orderId int) (domain.Orders, error) {
-	var order domain.Orders
-	findOrder := `SELECT * FROM orders WHERE user_id=$1 AND id=$2`
-	err := c.DB.Raw(findOrder, userId, orderId).Scan(&order).Error
+func (c *OrderDatabase) ListOrder(userId, orderId int) (response.OrderResponse, error) {
+	var order response.OrderResponse
+	// findOrder := `SELECT * FROM orders WHERE user_id=$1 AND id=$2`
+
+	err := c.DB.Raw(`SELECT users.name AS user_name ,orders.* , addresses.* AS shipping ,models.model_name , payment_types.type AS payment_type , payment_statuses.payment_status AS payment_status ,order_statuses.status AS order_status
+		FROM orders
+		LEFT JOIN order_items ON orders.id=order_items.orders_id
+		LEFT JOIN users on orders.user_id=users.id
+		LEFT JOIN addresses ON orders.shipping_address=addresses.id
+		JOIN models ON order_items.model_id=models.id
+		LEFT JOIN payment_types ON  orders.payment_type_id=payment_types.id
+		LEFT JOIN payment_statuses ON orders.payment_status_id=payment_statuses.id
+		LEFT JOIN order_statuses ON orders.order_status_id=order_statuses.id
+		WHERE orders.user_id=$1 AND orders.id=$2
+		`, userId, orderId).Scan(&order).Error
+		order.Id = uint(orderId)
 	return order, err
 }
 

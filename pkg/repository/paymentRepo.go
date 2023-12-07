@@ -29,11 +29,26 @@ func (c *PaymentDatabase) UpdatePaymentDetails(orderID int, paymentRef string) (
 	var updatedPayment domain.PaymentDetails
 	updatePaymentQuery := `	UPDATE payment_details SET payment_type_id = 2, payment_status_id = 3, payment_ref = $1, updated_at = NOW()
 							WHERE orders_id = $2 RETURNING *;`
+	tx := c.DB.Begin()
 	err := c.DB.Raw(updatePaymentQuery, paymentRef, orderID).Scan(&updatedPayment).Error
+	if err != nil {
+		tx.Rollback()
+		return updatedPayment, err
+	}
+	updateOrderTable := `UPDATE orders SET payment_status_id=3 WHERE id=$1`
+	err = tx.Exec(updateOrderTable, orderID).Error
+	if err != nil {
+		tx.Rollback()
+		return domain.PaymentDetails{}, err
+	}
+	if err = tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return domain.PaymentDetails{}, err
+	}
 	return updatedPayment, err
 }
 
-// -------------------------- List-All-Addresses --------------------------//
+// -------------------------- Wallet --------------------------//
 
 func (c *PaymentDatabase) DisplayWallet(userId int) (response.Wallet, error) {
 	var wallet response.Wallet

@@ -36,7 +36,7 @@ func (c *OrderUseCase) UserCancelOrder(orderId, userId int) error {
 
 // -------------------------- List-Order --------------------------//
 
-func (c *OrderUseCase) ListOrder(userId, orderId int) (domain.Orders, error) {
+func (c *OrderUseCase) ListOrder(userId, orderId int) (response.OrderResponse, error) {
 	order, err := c.orderRepo.ListOrder(userId, orderId)
 	return order, err
 }
