@@ -13,3 +13,8 @@ type ReportParams struct {
 	StartDate string `json:"startdate"`
 	EndDate   string `json:"enddate"`
 }
+type CreateAdmin struct {
+	Name     string ` json:"name" validate:"required"`
+	Email    string ` json:"email" validate:"required" binding:"email"`
+	Password string ` json:"password" validate:"required"`
+}

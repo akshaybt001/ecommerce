@@ -164,8 +164,18 @@ func NewServerHTTP(
 		{
 			supadmin.POST("/logout", supadminHandler.SupAdminLogout)
 
+			admin := supadmin.Group("/admin")
+			{
+				admin.POST("/create", supadminHandler.CreateAdmin)
+				admin.GET("/", supadminHandler.ListAllAdmins)
+				admin.GET("/:admin_id", supadminHandler.DisplayAdmin)
+
+			}
+
 			supAdminUsers := supadmin.Group("/user")
 			{
+				supAdminUsers.GET("/:user_id", adminHandler.ShowUser)
+				supAdminUsers.GET("/", adminHandler.ShowAllUsers)
 				supAdminUsers.PATCH("/block", supadminHandler.BlockUser)
 				supAdminUsers.PATCH("/unblock/:user_id", supadminHandler.UnblockUser)
 			}

@@ -66,6 +66,83 @@ func (cr *SupAdminHandler) SupAdminLogout(c *gin.Context) {
 	})
 }
 
+func (cr *SupAdminHandler) CreateAdmin(c *gin.Context) {
+	var admin helper.CreateAdmin
+	err := c.BindJSON(&admin)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, response.Response{
+			StatusCode: 422,
+			Message:    "error binding json",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	newAdmin, err := cr.supadminUseCase.CreateAdmin(admin)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "errro creaeting admin",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "admin created successfully",
+		Data:       newAdmin,
+		Errors:     nil,
+	})
+}
+func (cr *SupAdminHandler) ListAllAdmins(c *gin.Context) {
+	admins, err := cr.supadminUseCase.ListAllAdmins()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "error listing all admins",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "admins listed successfully",
+		Data:       admins,
+		Errors:     nil,
+	})
+}
+
+func (p *SupAdminHandler) DisplayAdmin(c *gin.Context) {
+	paramId := c.Param("admin_id")
+	id, err := strconv.Atoi(paramId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "error parsing params",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	admin, err := p.supadminUseCase.DisplayAdmin(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "error displaying admin",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "admin displayed successfully",
+		Data:       admin,
+		Errors:     nil,
+	})
+}
 //-------------------------- Block-User --------------------------//
 
 func (cr *SupAdminHandler) BlockUser(c *gin.Context) {

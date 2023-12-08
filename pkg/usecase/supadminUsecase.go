@@ -7,6 +7,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 	"main.go/pkg/common/helper"
+	"main.go/pkg/common/response"
 	interfaces "main.go/pkg/repository/interface"
 	services "main.go/pkg/usecase/interface"
 )
@@ -49,6 +50,31 @@ func (c *supadminUseCase) SupAdminLogin(supadmin helper.LoginReq) (string, error
 
 	return token, nil
 }
+
+// CreateAdmin implements interfaces.SupAdminUseCase.
+func (cr *supadminUseCase) CreateAdmin(admin helper.CreateAdmin) (response.AdminData, error) {
+	var newAdmin response.AdminData
+	hash, err := bcrypt.GenerateFromPassword([]byte(admin.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return newAdmin, fmt.Errorf("error hashing password")
+	}
+	admin.Password = string(hash)
+	newAdmin, err = cr.supadminRepo.CreateAdmin(admin)
+	return newAdmin, err
+}
+
+// ListAllAdmins implements interfaces.SuperAdminUseCase.
+func (cr *supadminUseCase) ListAllAdmins() ([]response.AdminData, error) {
+	admins, err := cr.supadminRepo.ListAllAdmins()
+	return admins, err
+}
+
+// DisplayAdmin implements interfaces.SuperAdminUseCase.
+func (cr *supadminUseCase) DisplayAdmin(id int) (response.AdminData, error) {
+	admin, err := cr.supadminRepo.DisplayAdmin(id)
+	return admin, err
+}
+
 // -------------------------- Block-User --------------------------//
 
 func (c *supadminUseCase) BlockUser(body helper.BlockData) error {
