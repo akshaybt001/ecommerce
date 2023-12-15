@@ -271,6 +271,40 @@ func (cr *OrderHandler) ListAllOrderForAdmin(c *gin.Context) {
 		Errors:     nil,
 	})
 }
+
+// //------------------- Add Order Status --------------------------------
+
+// func (cr *OrderHandler) AddOrderStatus(c *gin.Context) {
+// 	var orderStatus helper.OrderStatus
+// 	err := c.BindJSON(&orderStatus)
+// 	if err != nil {
+// 		c.JSON(http.StatusBadRequest, response.Response{
+// 			StatusCode: 400,
+// 			Message:    "error binding json",
+// 			Data:       nil,
+// 			Errors:     err.Error(),
+// 		})
+// 		return
+// 	}
+// 	newOrderStatus, err := cr.OrderUseCase.AddOrderStatus(orderStatus)
+// 	if err != nil {
+// 		c.JSON(http.StatusBadRequest, response.Response{
+// 			StatusCode: 400,
+// 			Message:    "error adding new orderStatus",
+// 			Data:       nil,
+// 			Errors:     err.Error(),
+// 		})
+// 		return
+// 	}
+// 	c.JSON(http.StatusOK, response.Response{
+// 		StatusCode: 200,
+// 		Message:    "orderstatus added successfully",
+// 		Data:       newOrderStatus,
+// 		Errors:     nil,
+// 	})
+// }
+
+
 func (cr *OrderHandler) InvoiceDownload(c *gin.Context) {
 	paramId := c.Param("orderId")
 	orderId, err := strconv.Atoi(paramId)

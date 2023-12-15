@@ -406,3 +406,5 @@ func (c *OrderDatabase) UserIdFromOrder(id int) (int, error) {
 	err := c.DB.Raw(`SELECT user_id FROM orders WHERE id=?`, id).Scan(&userId).Error
 	return userId, err
 }
+
+

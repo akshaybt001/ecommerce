@@ -207,3 +207,68 @@ func (cr *SupAdminHandler) UnblockUser(c *gin.Context) {
 		Errors:     nil,
 	})
 }
+
+//-------------------------- Block-User --------------------------//
+
+func (cr *SupAdminHandler) BlockAdmin(c *gin.Context) {
+	var body helper.BlockAdminData
+	err := c.Bind(&body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "bind faild",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	err = cr.supadminUseCase.BlockAdmin(body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "Can't Block",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "Admin Blocked",
+		Data:       nil,
+		Errors:     nil,
+	})
+}
+
+//-------------------------- UnBlock-User --------------------------//
+
+func (cr *SupAdminHandler) UnblockAdmin(c *gin.Context) {
+	paramsId := c.Param("admin_id")
+	id, err := strconv.Atoi(paramsId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "bind faild",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+	err = cr.supadminUseCase.UnblockAdmin(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			StatusCode: 400,
+			Message:    "cant unblock admin",
+			Data:       nil,
+			Errors:     err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Response{
+		StatusCode: 200,
+		Message:    "admin unblocked",
+		Data:       nil,
+		Errors:     nil,
+	})
+}

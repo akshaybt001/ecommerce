@@ -18,3 +18,8 @@ type CreateAdmin struct {
 	Email    string ` json:"email" validate:"required" binding:"email"`
 	Password string ` json:"password" validate:"required"`
 }
+
+type BlockAdminData struct {
+	AdminId uint   ` json:"adminid" validate:"required"`
+	Reason string ` json:"reason" validate:"required"`
+}

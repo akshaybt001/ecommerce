@@ -16,6 +16,8 @@ type supadminUseCase struct {
 	supadminRepo interfaces.SupAdminRepository
 }
 
+
+
 func NewSupAdminUseCase(repo interfaces.SupAdminRepository) services.SupAdminUseCase {
 	return &supadminUseCase{
 		supadminRepo: repo,
@@ -64,13 +66,13 @@ func (cr *supadminUseCase) CreateAdmin(admin helper.CreateAdmin) (response.Admin
 }
 
 // ListAllAdmins implements interfaces.SuperAdminUseCase.
-func (cr *supadminUseCase) ListAllAdmins() ([]response.AdminData, error) {
+func (cr *supadminUseCase) ListAllAdmins() ([]response.AdminDetails, error) {
 	admins, err := cr.supadminRepo.ListAllAdmins()
 	return admins, err
 }
 
 // DisplayAdmin implements interfaces.SuperAdminUseCase.
-func (cr *supadminUseCase) DisplayAdmin(id int) (response.AdminData, error) {
+func (cr *supadminUseCase) DisplayAdmin(id int) (response.AdminDetails, error) {
 	admin, err := cr.supadminRepo.DisplayAdmin(id)
 	return admin, err
 }
@@ -86,5 +88,20 @@ func (c *supadminUseCase) BlockUser(body helper.BlockData) error {
 
 func (c *supadminUseCase) UnblockUser(id int) error {
 	err := c.supadminRepo.UnblockUser(id)
+	return err
+}
+
+
+// -------------------------- Block-Admin --------------------------//
+
+func (c *supadminUseCase) BlockAdmin(body helper.BlockAdminData) error {
+	err := c.supadminRepo.BlockAdmin(body)
+	return err
+}
+
+// -------------------------- UnBlock-Admin --------------------------//
+
+func (c *supadminUseCase) UnblockAdmin(id int) error {
+	err := c.supadminRepo.UnblockAdmin(id)
 	return err
 }

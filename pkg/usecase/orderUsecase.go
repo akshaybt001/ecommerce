@@ -64,6 +64,12 @@ func (c *OrderUseCase) ReturnOrder(userId, orderId int) (int, error) {
 
 // ListAllOrderForAdmin implements interfaces.OrderUseCase.
 func (c *OrderUseCase) ListAllOrderForAdmin() ([]response.AdminOrder, error) {
-	orders,err:=c.orderRepo.ListAllOrdersForAdmin()
-	return orders,err
+	orders, err := c.orderRepo.ListAllOrdersForAdmin()
+	return orders, err
 }
+
+// AddOrderStatus implements interfaces.OrderUseCase.
+// func (c *OrderUseCase) AddOrderStatus(orderStatus helper.OrderStatus) (response.OrderStatus, error) {
+// 	newOrderStatus, err := c.orderRepo.AddOrderStatus(orderStatus)
+// 	return newOrderStatus, err
+// }

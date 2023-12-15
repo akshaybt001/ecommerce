@@ -16,3 +16,7 @@ type UpdateOrder struct {
 	OrderId       uint `json:"orderid"`
 	OrderStatusID uint `json:"orderstatusid"`
 }
+type OrderStatus struct {
+	Id     uint   `json:"id,omitempty"`
+	Status string `json:"status"`
+}

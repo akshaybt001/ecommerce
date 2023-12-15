@@ -14,4 +14,6 @@ type OrderUseCase interface {
 	ListAllOrderForAdmin() ([]response.AdminOrder,error)
 	UpdateOrder(UpdateOrder helper.UpdateOrder) error
 	ReturnOrder(userId, orderId int) (int, error)
+	// AddOrderStatus(orderStatus helper.OrderStatus) (response.OrderStatus, error)
+
 }

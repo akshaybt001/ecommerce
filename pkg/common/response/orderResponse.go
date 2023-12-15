@@ -24,3 +24,7 @@ type OrderResponse struct {
 	PaymentStatus   string
 	OrderTotal      int
 }
+type OrderStatus struct {
+	Id     uint
+	Status string
+}

@@ -146,6 +146,12 @@ func NewServerHTTP(
 				sales.GET("/download", adminHandler.DownloadSalesReport)
 
 			}
+			// orderStatus:=admin.Group("/orderstatuses")
+			// {
+			// 	 orderStatus.GET("/",orderHandler.ListAllOrderStatuses)
+			// 	 orderStatus.POST("/add", orderHandler.AddOrderStatus)
+
+			// }
 			discount := admin.Group("/discount")
 			{
 				discount.POST("/add", discounthandler.AddDiscount)
@@ -169,6 +175,8 @@ func NewServerHTTP(
 				admin.POST("/create", supadminHandler.CreateAdmin)
 				admin.GET("/", supadminHandler.ListAllAdmins)
 				admin.GET("/:admin_id", supadminHandler.DisplayAdmin)
+				admin.PATCH("/block", supadminHandler.BlockAdmin)
+				admin.PATCH("/unblock/:admin_id", supadminHandler.UnblockAdmin)
 
 			}
 

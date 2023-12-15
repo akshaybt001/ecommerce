@@ -15,4 +15,6 @@ type OrderRepository interface {
 	UpdateOrder(updateOrder helper.UpdateOrder) error
 	ReturnOrder(userId, orderId int) (int, error)
 	UserIdFromOrder(id int) (int, error)
+	// AddOrderStatus(orderStatus helper.OrderStatus) (response.OrderStatus, error)
+
 }

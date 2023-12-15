@@ -19,3 +19,12 @@ type AdminData struct {
 	Name  string
 	Email string
 }
+type AdminDetails struct {
+	Id                uint
+	Name              string
+	Email             string
+	IsBlocked         bool
+	BlockedAt         string `json:",omitempty"`
+	BlockedBy         uint   `json:",omitempty"`
+	ReasonForBlocking string `json:",omitempty"`
+}

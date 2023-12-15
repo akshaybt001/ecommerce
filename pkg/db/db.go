@@ -19,6 +19,7 @@ func ConnectDatabse(cfg config.Config) (*gorm.DB, error) {
 		&domain.Admins{},
 		&domain.SupAdmins{},
 		&domain.UserBlockInfo{},
+		&domain.AdminBlockInfo{},
 		&domain.Category{},
 		&domain.Brand{},
 		&domain.Model{},
