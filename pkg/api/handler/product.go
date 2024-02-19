@@ -544,7 +544,7 @@ func (cr *ProductHandler) UploadImage(c *gin.Context) {
 		return
 	}
 
-	// Multipart form
+	// Multipart form 
 	form, _ := c.MultipartForm()
 
 	files := form.File["images"]
