@@ -136,7 +136,7 @@ func (cr *UserHandler) UserLogin(c *gin.Context) {
 	c.SetCookie("userToken", token, 3600*24*30, "", "", false, true)
 	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
-		Message:    "login succesfully",
+		Message:    "login successfully",
 		Data:       nil,
 		Errors:     nil,
 	})
@@ -241,7 +241,7 @@ func (cr *UserHandler) ViewProfile(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
-		Message:    "Profile",
+		Message:    "profile",
 		Data:       UserData,
 		Errors:     nil,
 	})

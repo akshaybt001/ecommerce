@@ -119,9 +119,17 @@ func (c *ProductDatabase) AddBrand(Brand helper.Brands) (response.Brands, error)
 
 func (c *ProductDatabase) UpdateBrand(id int, Brand helper.Brands) (response.Brands, error) {
 	var updatedBrand response.Brands
+	var category response.Category
+
+	query1 := `SELECT * FROM categories WHERE id=$1`
+	err := c.DB.Raw(query1, Brand.CategoryId).Scan(&category).Error
+	if err != nil {
+		return response.Brands{}, err
+	}
+
 	query2 := `UPDATE brands SET brand=$1,description=$2,category_id=$3,updated_at=NOW() WHERE id=$4
 		RETURNING id,brand,description,category_id`
-	err := c.DB.Raw(query2, Brand.Name, Brand.Description, Brand.CategoryId, id).
+	err = c.DB.Raw(query2, Brand.Name, Brand.Description, Brand.CategoryId, id).
 		Scan(&updatedBrand).Error
 	if err != nil {
 		return response.Brands{}, err
@@ -129,7 +137,9 @@ func (c *ProductDatabase) UpdateBrand(id int, Brand helper.Brands) (response.Bra
 	if updatedBrand.Id == 0 {
 		return response.Brands{}, fmt.Errorf("there is no such product")
 	}
-	return updatedBrand, nil
+	updatedBrand.CategoryName = category.Category
+
+	return updatedBrand, err
 }
 
 // -------------------------- Delete-Product --------------------------//
