@@ -115,7 +115,7 @@ func (cr *AdminHandler) ShowAllUsers(c *gin.Context) {
 		})
 		return
 	}
-
+	//just check
 	c.JSON(http.StatusOK, response.Response{
 		StatusCode: 200,
 		Message:    "users are",
